@@ -15,6 +15,8 @@ ________      _____________________           __________._______   _____________
 ![Downloads](https://img.shields.io/badge/license-GPLv3-blue.svg)
 ![Downloads](https://img.shields.io/badge/MySQL-5.7%2B-brightgreen.svg?style=flat)
 ![Downloads](https://img.shields.io/badge/Java-11-brightgreen.svg?style=flat)
+[![GitHub](https://img.shields.io/static/v1?label=&message=GitHub&logo=github&color=black&labelColor=555)](https://github.com/wl2027/data-pivot-plugin) 
+[![Gitee](https://img.shields.io/static/v1?label=&message=Gitee&logo=gitee&color=orange&labelColor=555)](https://gitee.com/wl2027/data-pivot-plugin)
 
 ## Introduction
 <!-- Plugin description -->
@@ -71,19 +73,25 @@ Restart the **IDE** after installation.
 ## Using The Plugin
 
 1. Set Project Mapping Strategy 设置项目映射策略
-![data-pivot setting.gif](./doc/image/data-pivot setting.gif)
+
+<img src="./doc/image/data-pivot-setting.gif">
 
 2. Perform Data Analysis on Class Fields 类字段进行数据分析
-   ![data-pivot setting.gif](./doc/image/data-pivot query.gif)
+
+<img src="./doc/image/data-pivot-query.gif">
+
 
 3. Navigate and Jump between Class Fields 类字段进行导航跳转
-   ![data-pivot setting.gif](./doc/image/data-pivot orm.gif)
+
+<img src="./doc/image/data-pivot-orm.gif">
 
 4. Navigate and Jump between Database columns 数据库字段进行导航跳转
-   ![data-pivot setting.gif](./doc/image/data-pivot rom.gif)
+
+<img src="./doc/image/data-pivot-rom.gif">
 
 5. Navigation and jumping of fields in the database console 在数据库控制台进行字段进行导航跳转
-   ![data-pivot setting.gif](./doc/image/data-pivot rom-console.gif)
+
+<img src="./doc/image/data-pivot-rom-console.gif">
 
 ## Compatibility
 
