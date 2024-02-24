@@ -1,0 +1,66 @@
+package com.datapivot.plugin.context;
+
+import com.datapivot.plugin.config.trigger.ORMSettingMapperTrigger;
+import com.datapivot.plugin.config.trigger.ROMSettingMapperTrigger;
+import com.datapivot.plugin.constants.DataPivotConstants;
+import com.datapivot.plugin.entity.DataPivotDatabaseInfo;
+import com.datapivot.plugin.entity.DataPivotMappingSettingInfo;
+import com.datapivot.plugin.i18n.DataPivotBundle;
+import com.datapivot.plugin.model.DataPivotCacheContainer;
+import com.datapivot.plugin.tool.MessageUtil;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.options.ShowSettingsUtil;
+import com.intellij.openapi.project.Project;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+public class DataPivotMappingSettingInfoCacheContainer extends DataPivotCacheContainer<DataPivotMappingSettingInfo> {
+    public DataPivotMappingSettingInfoCacheContainer() {
+        super(new ORMSettingMapperTrigger(),new ROMSettingMapperTrigger());
+    }
+    @Override
+    protected List<DataPivotMappingSettingInfo> init(Project project) {
+        List<DataPivotMappingSettingInfo> query = new DataPivotMappingSettingInfo().query();
+        List<DataPivotMappingSettingInfo> result = new ArrayList<>();
+        //切换项目时 uuid 更新
+        Map<String, DataPivotDatabaseInfo> dpDrDatabaseMapper = DataPivotApplication.getInstance().MAPPER.DP_DR_DATABASE_MAPPER;
+        Map<String, DataPivotDatabaseInfo> dpDpDatabaseMapper = DataPivotApplication.getInstance().MAPPER.DP_DP_DATABASE_MAPPER;
+        for (DataPivotMappingSettingInfo dataPivotMappingSettingInfo : query) {
+            if (dpDrDatabaseMapper.get(dataPivotMappingSettingInfo.getDatabaseReference()) == null) {
+                DataPivotDatabaseInfo dataPivotDatabaseInfo = dpDpDatabaseMapper.get(dataPivotMappingSettingInfo.getDatabasePath());
+                if (dataPivotDatabaseInfo!=null) {
+                    dataPivotMappingSettingInfo.setDatabaseReference(dataPivotDatabaseInfo.getDatabaseReference());
+                    dataPivotMappingSettingInfo.setDatabasePath(dataPivotDatabaseInfo.getDatabasePath());
+                    dataPivotMappingSettingInfo.setDataSourceName(dataPivotDatabaseInfo.getDataSourceName());
+                    dataPivotMappingSettingInfo.setDatabaseName(dataPivotDatabaseInfo.getDatabaseName());
+                    result.add(dataPivotMappingSettingInfo);
+                }
+            }else {
+                result.add(dataPivotMappingSettingInfo);
+            }
+        }
+        //更新
+        //new DataPivotMappingSettingInfo().save(new ArrayList<>());
+        new DataPivotMappingSettingInfo().save(result);
+        if (result == null || result.isEmpty()) {
+            MessageUtil.Notice.infoAction(DataPivotBundle.message("data.pivot.notice.title"),
+                    DataPivotBundle.message("data.pivot.notice.setting.null.content"),
+                    new NotificationAction(DataPivotBundle.message("data.pivot.notice.setting.null.action")) {
+                        @Override
+                        public void actionPerformed(@NotNull AnActionEvent e, @NotNull Notification notification) {
+                            ShowSettingsUtil.getInstance().showSettingsDialog(e.getProject(), DataPivotConstants.DATA_PIVOT_MAIN_SETTING);
+                            notification.expire();
+                        }
+                    });
+            return new ArrayList<>();
+        } else {
+            return result;
+        }
+    }
+
+}
