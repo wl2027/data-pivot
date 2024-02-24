@@ -8,8 +8,8 @@ ________      _____________________           __________._______   _____________
 ```
 # data-pivot-plugin
 
-[![Version](https://img.shields.io/jetbrains/plugin/v/com.github.wl2027.datapivotplugin.svg)](https://plugins.jetbrains.com/plugin/com.github.wl2027.datapivotplugin)
-[![Downloads](https://img.shields.io/jetbrains/plugin/d/com.github.wl2027.datapivotplugin.svg)](https://plugins.jetbrains.com/plugin/com.github.wl2027.datapivotplugin)
+[![Version](https://img.shields.io/jetbrains/plugin/v/com.github.wl2027.datapivotplugin.svg)](https://plugins.jetbrains.com/plugin/23828-data-pivot)
+[![Downloads](https://img.shields.io/jetbrains/plugin/d/com.github.wl2027.datapivotplugin.svg)](https://plugins.jetbrains.com/plugin/23828-data-pivot)
 ![Downloads](https://img.shields.io/github/release/wl2027/data-pivot-plugin.svg)
 ![Downloads](https://img.shields.io/github/stars/wl2027/data-pivot-plugin)
 ![Downloads](https://img.shields.io/badge/license-GPLv3-blue.svg)
@@ -71,19 +71,19 @@ Restart the **IDE** after installation.
 ## Using The Plugin
 
 1. Set Project Mapping Strategy 设置项目映射策略
-![data-pivot setting.gif](doc/image/data-pivot setting.gif)
+![data-pivot setting.gif](./doc/image/data-pivot setting.gif)
 
 2. Perform Data Analysis on Class Fields 类字段进行数据分析
-   ![data-pivot setting.gif](doc/image/data-pivot query.gif)
+   ![data-pivot setting.gif](./doc/image/data-pivot query.gif)
 
 3. Navigate and Jump between Class Fields 类字段进行导航跳转
-   ![data-pivot setting.gif](doc/image/data-pivot orm.gif)
+   ![data-pivot setting.gif](./doc/image/data-pivot orm.gif)
 
 4. Navigate and Jump between Database columns 数据库字段进行导航跳转
-   ![data-pivot setting.gif](doc/image/data-pivot rom.gif)
+   ![data-pivot setting.gif](./doc/image/data-pivot rom.gif)
 
 5. Navigation and jumping of fields in the database console 在数据库控制台进行字段进行导航跳转
-   ![data-pivot setting.gif](doc/image/data-pivot rom-console.gif)
+   ![data-pivot setting.gif](./doc/image/data-pivot rom-console.gif)
 
 ## Compatibility
 
