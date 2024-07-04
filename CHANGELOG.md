@@ -2,6 +2,12 @@
 
 # data-pivot-plugin Changelog
 
+## [1.0.1] - 2024-07-04
+### Changed
+- 更新图标
+- 更新插件ID
+- 更新JDK版本
+
 ## [1.0.0] - 2024-02-24
 ### Added
 - Project initialization, covering data analysis, ORM & ROM navigation.

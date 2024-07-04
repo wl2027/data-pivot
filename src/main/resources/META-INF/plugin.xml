@@ -1,6 +1,6 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin require-restart="true">
-    <id>com.github.wl2027.datapivotplugin</id>
+    <id>com.data.pivot.plugin</id>
     <name>data-pivot</name>
     <vendor>wl2027</vendor>
 
