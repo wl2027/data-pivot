@@ -6,7 +6,7 @@ fun environment(key: String) = providers.environmentVariable(key)
 
 plugins {
     id("java") // Java support
-    alias(libs.plugins.kotlin) // Kotlin support
+//    alias(libs.plugins.kotlin) // Kotlin support
     alias(libs.plugins.gradleIntelliJPlugin) // Gradle IntelliJ Plugin
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
@@ -23,11 +23,25 @@ repositories {
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
+    // MySQL JDBC Driver
+    implementation("mysql:mysql-connector-java:8.0.25")
+    // PostgreSQL JDBC Driver
+    implementation("org.postgresql:postgresql:42.2.20")
+    // Oracle JDBC Driver
+    implementation("com.oracle.database.jdbc:ojdbc8:19.8.0.0")
+    // HikariCP for connection pooling
+//    implementation("com.zaxxer:HikariCP:4.0.3")
+    // MongoDB Driver
+    implementation("org.mongodb:mongo-java-driver:3.12.10")
+    // SQL Server JDBC Driver
+    implementation("net.sourceforge.jtds:jtds:1.3.1")
+    //implementation("com.microsoft.sqlserver:mssql-jdbc:9.2.1.jre8")
+    implementation("com.microsoft.sqlserver:mssql-jdbc:9.4.0.jre8")
 //    implementation(libs.annotations)
     implementation("cn.hutool:hutool-all:5.8.23")
-    implementation("mysql:mysql-connector-java:8.0.23")
-    implementation("org.graalvm.js:js:22.3.0")
-    implementation("org.graalvm.js:js-scriptengine:22.3.0")
+    implementation("org.apache.commons:commons-text:1.9")
+//    implementation("org.graalvm.js:js:22.3.0")
+//    implementation("org.graalvm.js:js-scriptengine:22.3.0")
 }
 
 // Set the JVM language level used to build the project. Use Java 11 for 2020.3+, and Java 17 for 2022.2+.
@@ -55,6 +69,13 @@ changelog {
     repositoryUrl = properties("pluginRepositoryUrl")
 }
 
+qodana {
+    cachePath = provider { file(".qodana").canonicalPath }
+    reportPath = provider { file("build/reports/inspections").canonicalPath }
+    saveReport = true
+    showReport = environment("QODANA_SHOW_REPORT").map { it.toBoolean() }.getOrElse(false)
+}
+
 // Configure Gradle Kover Plugin - read more: https://github.com/Kotlin/kotlinx-kover#configuration
 koverReport {
     defaults {
@@ -73,8 +94,8 @@ tasks {
     }
 
     withType<JavaCompile> {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
+        sourceCompatibility = "11"
+        targetCompatibility = "11"
         options.encoding = "UTF-8"
     }
     wrapper {

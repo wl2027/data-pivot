@@ -11,40 +11,65 @@
     <resource-bundle>messages.DataPivotBundle</resource-bundle>
 
     <actions>
-        <action id="DataPivotORM" class="com.datapivot.plugin.actions.ORMNavigationAction" text="Data Pivot ORM"
-                description="Data Pivot ORM">
-            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
-            <keyboard-shortcut keymap="$default" first-keystroke="alt R"/>
-        </action>
-        <action  id="DataPivotROM" class="com.datapivot.plugin.actions.ROMNavigationAction" text="Data Pivot ROM">
-            <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>
-            <add-to-group group-id="Console.TableResult.PopupGroup" anchor="first"/>
-            <keyboard-shortcut keymap="$default" first-keystroke="alt O"/>
-        </action>
-        <action id="DataPivotSample" class="com.datapivot.plugin.actions.DataPivotSampleAction" text="Data Pivot Sample"
-                description="Data Pivot Sample">
-            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        <action id="DataPivot.Query" class="com.data.pivot.plugin.actions.DataPivotQueryAction"
+                text="Data Pivot Query"
+                icon="/icons/query.svg"
+                description="Data Pivot Query">
             <keyboard-shortcut keymap="$default" first-keystroke="alt Q"/>
         </action>
+        <action id="DataPivot.Analysis" class="com.data.pivot.plugin.actions.DataPivotAnalysisAction"
+                text="Data Pivot Analysis"
+                icon="/icons/analysis.svg"
+                description="Data Pivot Analysis">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt A"/>
+        </action>
+        <group id="DataPivot.Navigation" text="navigation" popup="false">
+            <action id="DataPivot.DataPivotORM" class="com.data.pivot.plugin.actions.ORMNavigationAction"
+                    icon="/icons/navigationORM.svg"
+                    text="Data Pivot ORM"
+                    description="Data Pivot ORM">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt R"/>
+            </action>
+            <action id="DataPivot.DataPivotROM" class="com.data.pivot.plugin.actions.ROMNavigationAction"
+                    icon="/icons/navigationROM.svg"
+                    text="Data Pivot ROM"
+                    description="Data Pivot ROM">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt O"/>
+            </action>
+        </group>
+        <group id="DataPivot.MainMenu" text="Data Pivot" popup="true" icon="AllIcons.General.Locate"
+               class="com.data.pivot.plugin.model.DataPivotBaseGroup">
+            <separator text="query"/>
+            <reference ref="DataPivot.Query"/>
+            <separator text="analysis"/>
+            <reference ref="DataPivot.Analysis"/>
+            <separator text="navigation"/>
+            <reference ref="DataPivot.Navigation"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+            <add-to-group group-id="Console.TableResult.PopupGroup" anchor="first"/>
+            <add-to-group group-id="DatabaseViewPopupMenu" anchor="first"/>
+        </group>
     </actions>
 
     <project-components>
         <component>
-            <implementation-class>com.datapivot.plugin.config.DataPivotInitializer</implementation-class>
+            <implementation-class>com.data.pivot.plugin.config.DataPivotInitializer</implementation-class>
         </component>
     </project-components>
 
     <projectListeners>
-        <listener class="com.datapivot.plugin.config.listener.RefreshSchemaActionListener"
+        <listener class="com.data.pivot.plugin.config.listener.RefreshSchemaActionListener"
                   topic="com.intellij.openapi.actionSystem.ex.AnActionListener"/>
     </projectListeners>
 
     <extensions defaultExtensionNs="com.intellij">
-        <projectService serviceImplementation="com.datapivot.plugin.context.DataPivotApplication" />
+        <codeInsight.lineMarkerProvider language="JAVA" order="last"
+                                        implementationClass="com.data.pivot.plugin.config.DataPivotLineMarkerProvider"/>
+        <projectService serviceImplementation="com.data.pivot.plugin.context.DataPivotApplication" />
         <projectConfigurable
                 parentId="tools"
-                instance="com.datapivot.plugin.view.setting.DataPivotMappingSettingView"
+                instance="com.data.pivot.plugin.view.setting.DataPivotMappingSettingView"
                 id="DataPivotMappingSettingView"
-                displayName="Data Pivot Mapping Setting"/>
+                displayName="Data-Pivot Configuration"/>
     </extensions>
 </idea-plugin>

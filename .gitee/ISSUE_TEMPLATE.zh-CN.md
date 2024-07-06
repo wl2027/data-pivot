@@ -1,15 +1,17 @@
+Before submitting your issue, please answer some questions. Thank you!
 在提交问题之前，请回答一些问题。谢谢！
 
-### 您使用哪个版本的data-pivot?
+### Which version of data-pivot are you using? 您使用哪个版本的data-pivot?
 
-### 您使用哪个版本的 IntelliJ IDEA IU ?
+### Which version of IntelliJ IDEA IU are you using? 您使用哪个版本的 IntelliJ IDEA IU ?
 
-### 预期结果
+### Expected Result. 预期结果
 
-### 实际结果
+### Actual Result. 实际结果
 
-### 重现步骤
+### Steps to Reproduce. 重现步骤
 
-### 其他信息
+### Additional Information. 其他信息
 
-### 报错信息
+### Error Message. 报错信息
+

@@ -10,51 +10,74 @@ ________      _____________________           __________._______   _____________
 
 [![Version](https://img.shields.io/jetbrains/plugin/v/com.github.wl2027.datapivotplugin.svg)](https://plugins.jetbrains.com/plugin/23828-data-pivot)
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/com.github.wl2027.datapivotplugin.svg)](https://plugins.jetbrains.com/plugin/23828-data-pivot)
-![Downloads](https://img.shields.io/github/release/wl2027/data-pivot-plugin.svg)
-![Downloads](https://img.shields.io/github/stars/wl2027/data-pivot-plugin)
+![Downloads](https://img.shields.io/github/release/wl2027/data-pivot.svg)
+![Downloads](https://img.shields.io/github/stars/wl2027/data-pivot)
 ![Downloads](https://img.shields.io/badge/license-GPLv3-blue.svg)
 ![Downloads](https://img.shields.io/badge/MySQL-5.7%2B-brightgreen.svg?style=flat)
 ![Downloads](https://img.shields.io/badge/Java-11-brightgreen.svg?style=flat)
-[![GitHub](https://img.shields.io/static/v1?label=&message=GitHub&logo=github&color=black&labelColor=555)](https://github.com/wl2027/data-pivot-plugin) 
-[![Gitee](https://img.shields.io/static/v1?label=&message=Gitee&logo=gitee&color=orange&labelColor=555)](https://gitee.com/wl2027/data-pivot-plugin)
+[![GitHub](https://img.shields.io/static/v1?label=&message=GitHub&logo=github&color=black&labelColor=555)](https://github.com/wl2027/data-pivot) 
+[![Gitee](https://img.shields.io/static/v1?label=&message=Gitee&logo=gitee&color=orange&labelColor=555)](https://gitee.com/wl2027/data-pivot)
 
 ## Introduction
 <!-- Plugin description -->
 ### English:
-data-pivot is a plugin developed based on the IntelliJ IDEA IU platform, specifically designed for complex database scenarios encountered in project development.
+**data-pivot** is a data analysis tool for IDEA, designed to provide developers with convenient object-relational mapping navigation and data querying and reporting analysis functions.
 
-Facing challenges such as a large number of database tables, numerous columns, or special naming conventions, data-pivot provides developers with convenient field data report analysis capabilities as well as intelligent ORM and ROM navigation jumps between class fields and database columns.
+**Tool Features**
 
-Using the data-pivot plugin, you can easily achieve the following operations:
-- Analyze field data in real-time, including data values and their proportion, providing you with detailed report information.
-- Quickly and conveniently navigate between code and database columns, greatly improving work efficiency.
+- **Default Association Strategy**: ORM and ROM mapping strategies based on association.
+- **Precise Configurable Mapping**: Flexible and configurable ORM and ROM mapping strategies.
+- **Convenient Data Matching Query**: Fast and efficient object data querying function.
+- **Convenient Data Analysis Reports**: Easily generate analysis reports for object data.
 
-Currently, the plugin fully supports the MySQL database and provides multiple mapping strategies, including mybatis-plug annotations, jpa annotations, and camel case underscore naming conventions.
+**Usage Advantages**
 
-In the future, we will continue to expand the plugin's capabilities to support custom SQL queries and custom strategy mappings, while also adapting to more databases such as MongoDB, SQL Server, PostgreSQL, and more.
+In complex database scenarios, such as dealing with numerous database tables, multiple fields, or special naming rules, data-pivot can significantly reduce repetitive and mechanical manual operations, greatly improving development efficiency.
+
+**Database Support**
+
+Currently, data-pivot fully supports MySQL databases and is also compatible with Oracle, MongoDB, SQL Server, PostgreSQL, and other popular databases by default [Database Ranking: https://db-engines.com/en/ranking](https://db-engines.com/en/ranking).
+
+**Future Plans**
+
+In the future, we will continue to expand and optimize the plugin's functions, providing more configurable strategy mappings and configurable report scripts, while also adapting to more databases.
+
+Detailed operation documents: [https://github.com/wl2027/data-pivot](https://github.com/wl2027/data-pivot)
+
 ### 中文:
+**data-pivot** 是一个IDEA的数据分析工具，旨在为开发人员提供便捷的对象关系映射导航和数据查询和报表分析功能。
 
-data-pivot是一款基于IntelliJ IDEA IU平台开发的插件，为项目开发中遇到的复杂数据库场景设计。
+**工具特性**
 
-面对大量数据库表、众多字段或特殊命名规则等挑战，data-pivot为开发者提供了便捷的字段数据报表分析功能，以及智能的类字段与数据库字段之间的ORM和ROM导航跳转。
+- **默认关联策略**：基于关联度的 ORM 和 ROM 映射策略。
+- **精准配置映射**：灵活可配置的 ORM 和 ROM 映射策略。
+- **便捷的数据匹配查询**：快速高效的对象数据查询功能。
+- **便捷的数据分析报表**：轻松生成对象数据的分析报表。
 
-使用data-pivot插件，您可以轻松实现以下操作：
-- 实时分析字段数据情况，包括数据值及其数量占比等，为您提供详尽的报表信息。
-- 快速便捷地在代码与数据库字段之间进行导航跳转，极大提高工作效率。
+**使用优势**
 
-目前，该插件已全面支持MySQL数据库，并提供了多种映射策略， 包括mybatis-plug注解、jpa注解以及驼峰下划线命名规则等。
+在复杂数据库场景下，例如面对大量数据库表、众多字段或特殊命名规则等情况，data-pivot 可以显著减少重复性和机械性的人工操作，大幅提升开发效率。
 
-未来将继续扩展插件功能，支持自定义SQL查询和自定义策略映射， 同时适配MongoDB、SQL Server、PostgreSQL等更多数据库。
+**数据库支持**
+
+目前，data-pivot 已全面支持 MySQL 数据库，并默认兼容 Oracle、MongoDB、SQL Server、PostgreSQL 等主流数据库。
+
+[数据库热度排行:https://db-engines.com/en/ranking](https://db-engines.com/en/ranking)。
+
+**未来规划**
+
+未来，我们将继续扩展和优化插件功能，提供更多配置化策略映射和配置化报表脚本，同时适配更多数据库。
+
+
+详细操作说明文档: [https://github.com/wl2027/data-pivot](https://github.com/wl2027/data-pivot)
+
 <!-- Plugin description end -->
 
 ## Features
-
-- **Ease of Operation**: With just a simple mapping configuration, you can effortlessly utilize the three core functionalities of field data analysis, ORM navigation, and ROM navigation.
-- **Data Analysis**: Perform real-time data analysis on code fields, eliminating the need to frequently switch between IDEs for brief SQL queries. This allows you to focus more on writing high-quality code.
-- **Intelligent Navigation**: Efficiently jump between fields in your code, assisting developers in quickly finding and navigating to the desired fields in complex database scenarios, thus eliminating the tedious process of field searching.- 
-- **操作简单**: 仅需进行简单的映射配置，即可轻松使用字段数据分析、ORM跳转和ROM跳转三大核心功能.
-- **数据分析**: 实时进行代码字段的数据分析,开发过程中无需频繁切换IDE进行简短的SQL查询，从而更加专注于编写高质量的代码。
-- **智能导航**: 对代码进行高效的字段跳转,帮助开发者在复杂的数据库场景中高效地查找和跳转到所需字段，省去了繁琐的字段查找过程。
+- **Data-Pivot Query**: Provides convenient field data querying capabilities, quickly filtering required data through remote and local searches, and supports one-click copying.提供便捷的字段数据查询功能，通过远程搜索和本地搜索快速筛选所需数据，并支持一键复制。
+- **Data-Pivot Analysis**: Offers real-time field data report analysis, examining field data conditions such as data values and their distribution.提供实时字段数据报表分析功能，分析字段数据情况，如数据值及其数量占比等。
+- **Data-Pivot Configuration**: Supports various mapping strategies, including MyBatis-Plug annotations, JPA annotations, and camel case to underscore naming rules.支持多种映射策略，包括 MyBatis-Plug 注解、JPA 注解以及驼峰与下划线命名规则。
+- **Data-Pivot ORM/ROM**: Provides precise and intelligent association jumps between object attributes and database fields, efficiently finding the required fields in complex database scenarios, simplifying the field search process.提供对象属性与数据库字段之间精准、智能的关联跳转功能，在复杂数据库场景中高效查找所需字段，简化字段查找过程。
 
 ## Installation
 
@@ -72,26 +95,49 @@ Restart the **IDE** after installation.
 
 ## Using The Plugin
 
-1. Set Project Mapping Strategy 设置项目映射策略
+### 1. Navigate via Row Mapping Based on Associations. 根据关联度映射的行标进行导航跳转
 
-<img src="./doc/image/data-pivot-setting.gif">
+![1.navigation.gif](doc%2Fimage%2F1.navigation.gif)
 
-2. Perform Data Analysis on Class Fields 类字段进行数据分析
+### 2. Perform Data Queries via Association Mapping. 根据关联度映射的查询进行数据查询
 
-<img src="./doc/image/data-pivot-query.gif">
+- **Remote Search**: Fuzzy matching for selected conditional fields. 远程搜索:模糊匹配选中的条件字段
+
+![2.1_remote_query.gif](doc%2Fimage%2F2.1_remote_query.gif)
+
+- **Local Search**: Multi-item matching within the current table content. 本地搜索:当前表格内容的多项匹配匹配
+
+![2.2_local_query.gif](doc%2Fimage%2F2.2_local_query.gif)
+
+- **Select Fields for Query**: Query all fields with a single field selected, query specified fields with multiple texts selected, using the last selected field as the condition field. 选择单字段查询全部,选择多文本查询指定字段,选择的最后一个字段作为条件字段
+
+![2.3_query_select_column.gif](doc%2Fimage%2F2.3_query_select_column.gif)
+
+- **Copy Selected Table Row Data** 复制选中的表格行数据
+
+![2.4_copy_row_josn.gif](doc%2Fimage%2F2.4_copy_row_josn.gif)
 
 
-3. Navigate and Jump between Class Fields 类字段进行导航跳转
+### 3 Perform Data Analysis on Class Fields 类字段进行数据分析
 
-<img src="./doc/image/data-pivot-orm.gif">
+![3.data_pivot_analysis.gif](doc%2Fimage%2F3.data_pivot_analysis.gif)
 
-4. Navigate and Jump between Database columns 数据库字段进行导航跳转
+### 4 Set Project Mapping Strategy 设置项目映射策略
 
-<img src="./doc/image/data-pivot-rom.gif">
+![4.data_pivot_setting.gif](doc%2Fimage%2F4.data_pivot_setting.gif)
 
-5. Navigation and jumping of fields in the database console 在数据库控制台进行字段进行导航跳转
 
-<img src="./doc/image/data-pivot-rom-console.gif">
+### 5 Navigate and Jump between Class Fields 类字段进行导航跳转
+
+![5.data_pivot_orm.gif](doc%2Fimage%2F5.data_pivot_orm.gif)
+
+### 6 Navigate and Jump between Database columns 数据库字段进行导航跳转
+
+![6.data_pivot_rom.gif](doc%2Fimage%2F6.data_pivot_rom.gif)
+
+### 7 Navigation and jumping of fields in the database console 在数据库控制台进行字段进行导航跳转
+
+![7.data_pivot_rom_console.gif](doc%2Fimage%2F7.data_pivot_rom_console.gif)
 
 ## Compatibility
 
