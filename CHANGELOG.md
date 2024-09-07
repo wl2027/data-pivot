@@ -2,6 +2,13 @@
 
 # data-pivot-plugin Changelog
 
+## [1.1.1] - 2024-09-07
+
+### Changed
+- 更新readme文件的数据库支持
+- 关闭数据源检测提示
+
+
 ## [1.1.0] - 2024-07-18
 
 ### Added

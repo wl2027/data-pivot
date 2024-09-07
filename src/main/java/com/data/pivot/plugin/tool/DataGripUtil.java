@@ -48,7 +48,7 @@ public class DataGripUtil {
         try {
             Class.forName(dataSource.getDriverClass());
         } catch (ClassNotFoundException e) {
-            MessageUtil.Notice.error(DataPivotBundle.message("data.pivot.notice.connection.driver.null",driverClassName));
+            //MessageUtil.Notice.error(DataPivotBundle.message("data.pivot.notice.connection.driver.null",driverClassName));
             return dataPivotDatabaseInfoList;
         }
         Map<String, String> driverProperties = ((DatabaseDriverImpl) databaseDriver).getDriverProperties();
