@@ -47,20 +47,21 @@ public class DataPivotMappingSettingInfoCacheContainer extends DataPivotCacheCon
         //更新
         //new DataPivotMappingSettingInfo().save(new ArrayList<>());
         new DataPivotMappingSettingInfo().save(result);
-        if (result == null || result.isEmpty()) {
-            MessageUtil.Notice.infoAction(DataPivotBundle.message("data.pivot.notice.title"),
-                    DataPivotBundle.message("data.pivot.notice.setting.null.content"),
-                    new NotificationAction(DataPivotBundle.message("data.pivot.notice.setting.null.action")) {
-                        @Override
-                        public void actionPerformed(@NotNull AnActionEvent e, @NotNull Notification notification) {
-                            ShowSettingsUtil.getInstance().showSettingsDialog(e.getProject(), DataPivotConstants.DATA_PIVOT_MAIN_SETTING);
-                            notification.expire();
-                        }
-                    });
-            return new ArrayList<>();
-        } else {
-            return result;
-        }
+//        if (result == null || result.isEmpty()) {
+//            MessageUtil.Notice.infoAction(DataPivotBundle.message("data.pivot.notice.title"),
+//                    DataPivotBundle.message("data.pivot.notice.setting.null.content"),
+//                    new NotificationAction(DataPivotBundle.message("data.pivot.notice.setting.null.action")) {
+//                        @Override
+//                        public void actionPerformed(@NotNull AnActionEvent e, @NotNull Notification notification) {
+//                            ShowSettingsUtil.getInstance().showSettingsDialog(e.getProject(), DataPivotConstants.DATA_PIVOT_MAIN_SETTING);
+//                            notification.expire();
+//                        }
+//                    });
+//            return new ArrayList<>();
+//        } else {
+//            return result;
+//        }
+        return result;
     }
 
 }

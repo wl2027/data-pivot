@@ -2,6 +2,11 @@
 
 # data-pivot-plugin Changelog
 
+## [1.1.2] - 2024-09-10
+
+### Changed
+- 关闭data-pivot mapping配置提醒
+
 ## [1.1.1] - 2024-09-07
 
 ### Changed
