@@ -2,6 +2,12 @@
 
 # data-pivot-plugin Changelog
 
+## [Unreleased]
+
+## [2.0.0] - 2025-03-23
+### Refactor
+- 重构项目模块
+
 ## [1.1.2] - 2024-09-10
 
 ### Changed
@@ -54,3 +60,10 @@
 - Project initialization, covering data analysis, ORM & ROM navigation.
 - 项目初始化，包含数据分析、ORM&ROM导航。
 
+[Unreleased]: https://github.com/JetBrains/intellij-platform-plugin-template/compare/v2.0.2...HEAD
+[2.0.0]: https://github.com/wl2027/runtime-pivot/compare/1.1.2...2.0.0
+[1.1.2]: https://github.com/wl2027/runtime-pivot/compare/1.1.1...1.1.2
+[1.1.1]: https://github.com/wl2027/runtime-pivot/compare/1.1.0...1.1.1
+[1.1.0]: https://github.com/wl2027/runtime-pivot/compare/1.0.1...1.1.0
+[1.0.1]: https://github.com/wl2027/runtime-pivot/compare/1.0.0...1.0.1
+[1.0.0]: https://github.com/wl2027/runtime-pivot/commits/1.0.0
