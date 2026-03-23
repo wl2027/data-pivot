@@ -6,22 +6,29 @@ ________      _____________________           __________._______   _____________
 /_______  /\____|__  /____|\____|__  /         |____|   |___|  \___/   \_______  /____|   
         \/         \/              \/                                          \/         
 ```
+<div align="center">
+
 # data-pivot-plugin
 
-[![Version](https://img.shields.io/jetbrains/plugin/v/com.github.wl2027.datapivotplugin.svg)](https://plugins.jetbrains.com/plugin/23828-data-pivot)
+
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/com.github.wl2027.datapivotplugin.svg)](https://plugins.jetbrains.com/plugin/23828-data-pivot)
 ![Downloads](https://img.shields.io/github/release/wl2027/data-pivot.svg)
-![Downloads](https://img.shields.io/github/stars/wl2027/data-pivot)
-![Downloads](https://img.shields.io/badge/license-GPLv3-blue.svg)
-![Downloads](https://img.shields.io/badge/Java-11-brightgreen.svg?style=flat)
-[![GitHub](https://img.shields.io/static/v1?label=&message=GitHub&logo=github&color=black&labelColor=555)](https://github.com/wl2027/data-pivot) 
-[![Gitee](https://img.shields.io/static/v1?label=&message=Gitee&logo=gitee&color=orange&labelColor=555)](https://gitee.com/wl2027/data-pivot)
 
 ![MySQL](https://img.shields.io/badge/MySQL-支持-brightgreen.svg)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-支持-blue.svg)
 ![Oracle](https://img.shields.io/badge/Oracle-支持-red.svg)
 ![SQL Server](https://img.shields.io/badge/SQL%20Server-支持-lightgrey.svg)
 ![MongoDB](https://img.shields.io/badge/MongoDB-支持-brightgreen.svg)
+
+![Downloads](https://img.shields.io/badge/license-GPLv3-blue.svg)
+![Downloads](https://img.shields.io/badge/Java-11-brightgreen.svg?style=flat)
+![Downloads](https://img.shields.io/github/stars/wl2027/data-pivot)
+[![GitHub](https://img.shields.io/static/v1?label=&message=GitHub&logo=github&color=black&labelColor=555)](https://github.com/wl2027/data-pivot) 
+[![Gitee](https://img.shields.io/static/v1?label=&message=Gitee&logo=gitee&color=orange&labelColor=555)](https://gitee.com/wl2027/data-pivot)
+[![Version](https://img.shields.io/jetbrains/plugin/v/com.github.wl2027.datapivotplugin.svg)](https://plugins.jetbrains.com/plugin/23828-data-pivot)
+
+
+</div>
 
 ## Introduction
 <!-- Plugin description -->
