@@ -1,5 +1,6 @@
 package com.data.pivot.plugin.tool;
 
+import com.data.pivot.plugin.i18n.DataPivotBundle;
 import com.intellij.database.dataSource.DatabaseDriver;
 import com.intellij.database.dataSource.LocalDataSource;
 import com.intellij.database.dataSource.artifacts.DatabaseArtifactContext;
@@ -7,6 +8,7 @@ import com.intellij.database.dataSource.artifacts.DatabaseArtifactDefaultContext
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.util.ui.classpath.SimpleClasspathElement;
 
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
@@ -26,7 +28,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public final class DataSourceDriverUtil {
-    private static final ConcurrentMap<String, Driver> REGISTERED_DRIVERS = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, RegisteredDriver> REGISTERED_DRIVERS = new ConcurrentHashMap<>();
 
     private DataSourceDriverUtil() {
     }
@@ -64,32 +66,70 @@ public final class DataSourceDriverUtil {
 
         List<String> roots = classRootUrls == null ? Collections.emptyList() : classRootUrls;
         String key = driverClassName + "@" + String.join("|", roots);
-        REGISTERED_DRIVERS.computeIfAbsent(key, ignored -> registerDriver(dataSourceId, driverClassName, roots));
+        REGISTERED_DRIVERS.computeIfAbsent(key, ignored -> registerDriver(driverClassName, roots));
     }
 
-    private static Driver registerDriver(String dataSourceId, String driverClassName, List<String> classRootUrls) {
+    private static RegisteredDriver registerDriver(String driverClassName, List<String> classRootUrls) {
+        URLClassLoader classLoader = null;
         try {
-            Driver driver = createDriver(driverClassName, classRootUrls);
+            Driver driver;
+            if (classRootUrls.isEmpty()) {
+                driver = (Driver) Class.forName(driverClassName).getDeclaredConstructor().newInstance();
+            } else {
+                classLoader = createClassLoader(classRootUrls);
+                driver = (Driver) Class.forName(driverClassName, true, classLoader).getDeclaredConstructor().newInstance();
+            }
             Driver shim = new DriverShim(driver);
             DriverManager.registerDriver(shim);
-            return shim;
+            return new RegisteredDriver(shim, classLoader);
+        } catch (ClassNotFoundException | NoClassDefFoundError e) {
+            // 驱动 jar 尚未下载到本地(或 jar 内不含该驱动类),引导用户先在 DataGrip 数据源里下载该驱动。
+            closeQuietly(classLoader);
+            throw new IllegalStateException(
+                    DataPivotBundle.message("data.pivot.driver.not.downloaded", driverClassName), e);
         } catch (Exception e) {
-            throw new IllegalStateException("Failed to register database driver for " + dataSourceId + ": " + driverClassName, e);
+            closeQuietly(classLoader);
+            throw new IllegalStateException(
+                    DataPivotBundle.message("data.pivot.driver.register.fail", driverClassName, String.valueOf(e.getMessage())), e);
         }
     }
 
-    private static Driver createDriver(String driverClassName, List<String> classRootUrls) throws Exception {
-        if (classRootUrls.isEmpty()) {
-            return (Driver) Class.forName(driverClassName).getDeclaredConstructor().newInstance();
-        }
-
+    private static URLClassLoader createClassLoader(List<String> classRootUrls) throws Exception {
         List<URL> urls = new ArrayList<>();
         for (String rootUrl : classRootUrls) {
             urls.add(toUrl(rootUrl));
         }
+        return new URLClassLoader(urls.toArray(new URL[0]), DataSourceDriverUtil.class.getClassLoader());
+    }
 
-        URLClassLoader classLoader = new URLClassLoader(urls.toArray(new URL[0]), DataSourceDriverUtil.class.getClassLoader());
-        return (Driver) Class.forName(driverClassName, true, classLoader).getDeclaredConstructor().newInstance();
+    /**
+     * 释放本工具注册过的驱动 shim 及其 {@link URLClassLoader}。应在项目/插件 dispose 时调用,
+     * 避免 DriverManager 中的 shim 与类加载器长期驻留;下次查询会按需重新注册。
+     */
+    public static void deregisterAllDrivers() {
+        for (RegisteredDriver registered : REGISTERED_DRIVERS.values()) {
+            try {
+                DriverManager.deregisterDriver(registered.shim());
+            } catch (SQLException ignored) {
+                // best-effort cleanup on dispose
+            }
+            closeQuietly(registered.classLoader());
+        }
+        REGISTERED_DRIVERS.clear();
+    }
+
+    private static void closeQuietly(URLClassLoader classLoader) {
+        if (classLoader == null) {
+            return;
+        }
+        try {
+            classLoader.close();
+        } catch (IOException ignored) {
+            // best-effort cleanup
+        }
+    }
+
+    private record RegisteredDriver(Driver shim, URLClassLoader classLoader) {
     }
 
     private static URL toUrl(String rootUrl) throws Exception {

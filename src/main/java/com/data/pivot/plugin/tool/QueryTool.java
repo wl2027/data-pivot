@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 查询工具类，复用 IntelliJ IDEA Database Tools 中已配置的数据源驱动。
@@ -31,7 +32,8 @@ public class QueryTool {
     private static final int LIMIT = 20;
     private static final int QUERY_TIMEOUT = 5;
     private static final int MAX_CONNECTIONS = 10;
-    private static final ConcurrentMap<String, BlockingQueue<Connection>> connectionPools = new ConcurrentHashMap<>();
+    private static final int VALIDATION_TIMEOUT = 2;
+    private static final ConcurrentMap<String, ConnectionPool> connectionPools = new ConcurrentHashMap<>();
 
     private static Connection getConnection(DatabaseQueryConfig config) throws InterruptedException, SQLException {
         if (DBType.MONGO.equals(config.getDbType())) {
@@ -45,22 +47,12 @@ public class QueryTool {
         );
 
         String poolKey = config.getDataSourceId() + "@" + config.getUrl();
-        BlockingQueue<Connection> pool = getOrCreateConnectionPool(poolKey, config);
-        return pool.poll(QUERY_TIMEOUT, TimeUnit.SECONDS);
+        ConnectionPool pool = getOrCreateConnectionPool(poolKey, config);
+        return pool.acquire();
     }
 
-    private static BlockingQueue<Connection> getOrCreateConnectionPool(String poolKey, DatabaseQueryConfig config) {
-        return connectionPools.computeIfAbsent(poolKey, id -> {
-            BlockingQueue<Connection> pool = new LinkedBlockingQueue<>(MAX_CONNECTIONS);
-            for (int i = 0; i < MAX_CONNECTIONS; i++) {
-                try {
-                    pool.offer(createConnection(config));
-                } catch (SQLException e) {
-                    throw new RuntimeException("Failed to create a new connection", e);
-                }
-            }
-            return pool;
-        });
+    private static ConnectionPool getOrCreateConnectionPool(String poolKey, DatabaseQueryConfig config) {
+        return connectionPools.computeIfAbsent(poolKey, id -> new ConnectionPool(config));
     }
 
     private static Connection createConnection(DatabaseQueryConfig config) throws SQLException {
@@ -97,10 +89,15 @@ public class QueryTool {
     }
 
     private static void releaseConnection(DatabaseQueryConfig config, Connection connection) {
+        if (connection == null) {
+            return;
+        }
         String poolKey = config.getDataSourceId() + "@" + config.getUrl();
-        BlockingQueue<Connection> pool = connectionPools.get(poolKey);
+        ConnectionPool pool = connectionPools.get(poolKey);
         if (pool != null) {
-            pool.offer(connection);
+            pool.release(connection);
+        } else {
+            ConnectionPool.closeQuietly(connection);
         }
     }
 
@@ -197,18 +194,121 @@ public class QueryTool {
     }
 
     public static void closeAllConnections() {
-        connectionPools.values().forEach(pool -> {
-            while (!pool.isEmpty()) {
-                try {
-                    Connection connection = pool.poll();
-                    if (connection != null) {
-                        connection.close();
-                    }
-                } catch (SQLException ignored) {
-                    // Ignore close failures while disposing pooled connections.
-                }
-            }
-        });
+        connectionPools.values().forEach(ConnectionPool::closeAll);
         connectionPools.clear();
+    }
+
+    /**
+     * 懒加载连接池:连接按需创建(上限 {@link #MAX_CONNECTIONS}),取用时通过 {@link Connection#isValid(int)}
+     * 校验有效性,失效连接会被丢弃并按需重建。相比一次性预建连接,既避免首次查询因单个连接创建失败而整体抛错,
+     * 也避免长时间空闲后使用到已被数据库侧断开的 stale 连接。
+     */
+    private static final class ConnectionPool {
+        private final DatabaseQueryConfig config;
+        private final BlockingQueue<Connection> idle = new LinkedBlockingQueue<>(MAX_CONNECTIONS);
+        private final AtomicInteger total = new AtomicInteger(0);
+
+        private ConnectionPool(DatabaseQueryConfig config) {
+            this.config = config;
+        }
+
+        /**
+         * 取出一个可用连接;池内无空闲且未达上限时新建,达到上限则等待归还,超时返回 {@code null}。
+         */
+        private Connection acquire() throws SQLException, InterruptedException {
+            long deadlineNanos = System.nanoTime() + TimeUnit.SECONDS.toNanos(QUERY_TIMEOUT);
+            while (true) {
+                Connection pooled = idle.poll();
+                if (pooled != null) {
+                    if (isUsable(pooled)) {
+                        return pooled;
+                    }
+                    discard(pooled);
+                    continue;
+                }
+                if (tryReserveSlot()) {
+                    try {
+                        return createConnection(config);
+                    } catch (SQLException e) {
+                        total.decrementAndGet();
+                        throw e;
+                    }
+                }
+                long remainingNanos = deadlineNanos - System.nanoTime();
+                if (remainingNanos <= 0) {
+                    return null;
+                }
+                pooled = idle.poll(remainingNanos, TimeUnit.NANOSECONDS);
+                if (pooled == null) {
+                    return null;
+                }
+                if (isUsable(pooled)) {
+                    return pooled;
+                }
+                discard(pooled);
+            }
+        }
+
+        /**
+         * 归还连接:已关闭或池已满则直接释放,否则放回空闲队列。
+         */
+        private void release(Connection connection) {
+            if (connection == null) {
+                return;
+            }
+            if (isClosedQuietly(connection) || !idle.offer(connection)) {
+                discard(connection);
+            }
+        }
+
+        private boolean tryReserveSlot() {
+            int current;
+            do {
+                current = total.get();
+                if (current >= MAX_CONNECTIONS) {
+                    return false;
+                }
+            } while (!total.compareAndSet(current, current + 1));
+            return true;
+        }
+
+        private void discard(Connection connection) {
+            closeQuietly(connection);
+            total.decrementAndGet();
+        }
+
+        private void closeAll() {
+            Connection connection;
+            while ((connection = idle.poll()) != null) {
+                closeQuietly(connection);
+            }
+            total.set(0);
+        }
+
+        private static boolean isUsable(Connection connection) {
+            try {
+                return connection != null && !connection.isClosed() && connection.isValid(VALIDATION_TIMEOUT);
+            } catch (SQLException e) {
+                return false;
+            }
+        }
+
+        private static boolean isClosedQuietly(Connection connection) {
+            try {
+                return connection.isClosed();
+            } catch (SQLException e) {
+                return true;
+            }
+        }
+
+        private static void closeQuietly(Connection connection) {
+            try {
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException ignored) {
+                // Ignore close failures while disposing pooled connections.
+            }
+        }
     }
 }
