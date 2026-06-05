@@ -4,8 +4,8 @@ import com.data.pivot.plugin.config.trigger.DatabaseConnectionMapperTrigger;
 import com.data.pivot.plugin.config.trigger.DatabaseInfoMapperTrigger;
 import com.data.pivot.plugin.config.trigger.DatabaseReferenceMapperTrigger;
 import com.data.pivot.plugin.config.trigger.DatabaseUniqueIdMapperTrigger;
-import com.data.pivot.plugin.constants.DataPivotConstants;
 import com.data.pivot.plugin.entity.DataPivotDatabaseInfo;
+import com.data.pivot.plugin.enums.DBType;
 import com.data.pivot.plugin.model.DataPivotCacheContainer;
 import com.data.pivot.plugin.tool.DataGripUtil;
 import com.intellij.database.dataSource.LocalDataSource;
@@ -22,12 +22,12 @@ public class DataPivotDatabaseInfoCacheContainer extends DataPivotCacheContainer
 
     @Override
     protected List<DataPivotDatabaseInfo> init(Project project) {
-        LocalDataSourceManager localDataSourceManager = new LocalDataSourceManager(project);
+        LocalDataSourceManager localDataSourceManager = LocalDataSourceManager.getInstance(project);
         List<? extends LocalDataSource> dataSources = localDataSourceManager.getDataSources();
         List<DataPivotDatabaseInfo> dataPivotDatabaseInfos = new ArrayList<>();
         for (LocalDataSource dataSource : dataSources) {
-            //当前只处理mysql类型
-            if (DataPivotConstants.MYSQL.equals(dataSource.getDbms().getName())) {
+            DBType dbType = DBType.getByName(dataSource.getDbms().getName());
+            if (dbType != null && !DBType.MONGO.equals(dbType)) {
                 dataPivotDatabaseInfos.addAll(DataGripUtil.loadDatabaseInfo(dataSource));
             }
         }

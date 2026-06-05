@@ -5,6 +5,7 @@ import com.data.pivot.plugin.context.DataPivotApplication;
 import com.data.pivot.plugin.i18n.DataPivotBundle;
 import com.data.pivot.plugin.model.DataPivotTrigger;
 import com.data.pivot.plugin.tool.DatabaseUtil;
+import com.data.pivot.plugin.tool.DataSourceDriverUtil;
 import com.data.pivot.plugin.tool.MessageUtil;
 
 import java.sql.Connection;
@@ -37,6 +38,11 @@ public class DatabaseConnectionMapperTrigger implements DataPivotTrigger<DataPiv
         //dbPassword="root123";
         //dbUrl=dbUrl+"&connectTimeout=2000&socketTimeout=10000";
         try {
+            DataSourceDriverUtil.ensureDriverRegistered(
+                    dataPivotDatabaseInfo.getUniqueId(),
+                    dataPivotDatabaseInfo.getDriverClassName(),
+                    dataPivotDatabaseInfo.getDriverClassRootUrls()
+            );
             DriverManager.setLoginTimeout(1);
             conn = DriverManager.getConnection(dbUrl, dbUserName, dbPassword);
         } catch (Exception e) {

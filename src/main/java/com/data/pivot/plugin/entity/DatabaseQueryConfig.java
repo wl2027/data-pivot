@@ -10,6 +10,8 @@ public class DatabaseQueryConfig {
     private String url;
     private String user;
     private String password;
+    private String driverClassName;
+    private List<String> driverClassRootUrls;
     private String dbName;
     private String schema;
     private String tableName;
@@ -27,11 +29,20 @@ public class DatabaseQueryConfig {
     public DatabaseQueryConfig(String dataSourceId, DBType dbType, String url, String user, String password,
                                String dbName, String schema, String tableName, List<String> columns,
                                String conditionField, String likeValue, String sql) {
+        this(dataSourceId, dbType, url, user, password, null, null, dbName, schema, tableName, columns, conditionField, likeValue, sql);
+    }
+
+    public DatabaseQueryConfig(String dataSourceId, DBType dbType, String url, String user, String password,
+                               String driverClassName, List<String> driverClassRootUrls, String dbName,
+                               String schema, String tableName, List<String> columns,
+                               String conditionField, String likeValue, String sql) {
         this.dataSourceId = dataSourceId;
         this.dbType = dbType;
         this.url = url;
         this.user = user;
         this.password = password;
+        this.driverClassName = driverClassName;
+        this.driverClassRootUrls = driverClassRootUrls;
         this.dbName = dbName;
         this.schema = schema;
         this.tableName = tableName;
@@ -67,6 +78,14 @@ public class DatabaseQueryConfig {
 
     public String getPassword() {
         return password;
+    }
+
+    public String getDriverClassName() {
+        return driverClassName;
+    }
+
+    public List<String> getDriverClassRootUrls() {
+        return driverClassRootUrls;
     }
 
     public String getDbName() {

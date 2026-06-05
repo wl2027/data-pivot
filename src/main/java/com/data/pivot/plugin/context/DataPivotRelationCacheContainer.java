@@ -1,6 +1,5 @@
 package com.data.pivot.plugin.context;
 
-import cn.hutool.core.util.ReflectUtil;
 import com.data.pivot.plugin.config.trigger.DataPivotRelationMapperTrigger;
 import com.data.pivot.plugin.i18n.DataPivotBundle;
 import com.data.pivot.plugin.model.DataPivotCacheContainer;
@@ -9,11 +8,13 @@ import com.data.pivot.plugin.tool.DataPivotUtil;
 import com.data.pivot.plugin.tool.MessageUtil;
 import com.intellij.database.dataSource.LocalDataSource;
 import com.intellij.database.dataSource.LocalDataSourceManager;
+import com.intellij.database.model.DasColumn;
 import com.intellij.database.model.DasObject;
 import com.intellij.database.model.ObjectKind;
-import com.intellij.database.psi.DataSourceManager;
-import com.intellij.database.psi.DbColumnImpl;
-import com.intellij.database.psi.DbDataSourceImpl;
+import com.intellij.database.psi.DbColumn;
+import com.intellij.database.psi.DbElement;
+import com.intellij.database.psi.DbPsiFacade;
+import com.intellij.database.util.DasUtil;
 import com.intellij.openapi.project.Project;
 
 import java.util.ArrayList;
@@ -27,85 +28,66 @@ public class DataPivotRelationCacheContainer extends DataPivotCacheContainer<Dat
 
     @Override
     protected List<DataPivotRelation> init(Project project) {
-        LocalDataSourceManager localDataSourceManager = new LocalDataSourceManager(project);
+        LocalDataSourceManager localDataSourceManager = LocalDataSourceManager.getInstance(project);
         List<? extends LocalDataSource> dataSources = localDataSourceManager.getDataSources();
         Map<String, List<String>> dbInfoMapCache = DataPivotApplication.getInstance().MAPPER.DP_DS_DATABASE_MAPPER;
         List<DataPivotRelation> rs = new ArrayList<>();
         for (LocalDataSource dataSource : dataSources) {
-            List<? extends DasObject> list = dataSource.getModel().getModelRoots().toList();
-            for (DasObject dasObject : list) {
-                String uniqueId = dataSource.getUniqueId();
-                List<String> strings = dbInfoMapCache.get(uniqueId);
-                if (strings == null||strings.isEmpty()) {
+            String uniqueId = dataSource.getUniqueId();
+            List<String> databaseNames = dbInfoMapCache.get(uniqueId);
+            if (databaseNames == null || databaseNames.isEmpty()) {
+                continue;
+            }
+
+            for (DasObject databaseObject : dataSource.getModel().getModelRoots()) {
+                String dbName = databaseObject.getName();
+                if (!databaseNames.contains(dbName)) {
                     continue;
                 }
-                String dbName = dasObject.getName();
-                if (strings.contains(dbName)) {
-                    //mysql类型
-                    DbColumnImpl createDbElement = null;
-                    try {
-                        //先SCHEMA 后 TABLE 从下往上取两层->column->table=>database=>datasource
-                        dasObject.getDasChildren(ObjectKind.NONE).toList();//直接获取
-                        Object myTables = ReflectUtil.getFieldValue(dasObject, "myTables");//库
-                        if (myTables == null) {
-                            dasObject.getDasChildren(ObjectKind.SCHEMA).toList().get(10).getDasChildren(ObjectKind.TABLE).toList();
-                            continue;
-                        }
-                        Object myElements = ReflectUtil.getFieldValue(myTables, "myElements");
-                        if (myElements == null) {
-                            continue;
-                        }
-                        List tableList = (List) myElements;
-                        if (tableList == null) {
-                            continue;
-                        }
-                        for (Object table : tableList) {
-                            Object myColumns = ReflectUtil.getFieldValue(table, "myColumns");
-                            if (myColumns == null) {
-                                continue;
-                            }
-                            Object myElementsColumn = ReflectUtil.getFieldValue(myColumns, "myElements");
-                            if (myColumns == null) {
-                                continue;
-                            }
-                            List columnList = (List) myElementsColumn;
-                            String tableName = ReflectUtil.invoke(table, "getName");
-                            if (tableName == null) {
-                                continue;
-                            }
-                            //mongo 没有字段的概念,所以可能为空
-                            if (columnList == null) {
-                                continue;
-                            }
-                            for (Object column : columnList) {
-                                String columnName = ReflectUtil.invoke(column, "getName");
-                                if (columnName == null) {
-                                    continue;
-                                }
-                                DbDataSourceImpl dbDataSource = ReflectUtil.newInstance(DbDataSourceImpl.class, project, dataSource, (DataSourceManager) localDataSourceManager);
-                                if (dbDataSource == null) {
-                                    continue;
-                                }
-                                createDbElement = ReflectUtil.invoke(dbDataSource, "createDbElement", column);
-                                if (createDbElement == null) {
-                                    continue;
-                                }
-                                DataPivotRelation dataPivotRelation = new DataPivotRelation();
-                                dataPivotRelation.setDatabaseReference(DataPivotUtil.createDatabaseReference(uniqueId, dbName));
-                                dataPivotRelation.setDatabaseName(dbName);
-                                dataPivotRelation.setTableName(tableName);
-                                dataPivotRelation.setColumnName(columnName);
-                                dataPivotRelation.setDbColumn(createDbElement);
-                                rs.add(dataPivotRelation);
-                            }
 
-                        }
-                    } catch (Exception ex) {
-                        MessageUtil.Notice.error(DataPivotBundle.message("data.pivot.notice.rom.data.error",dbName,String.valueOf(ex.getMessage())));
-                    }
+                try {
+                    collectRelations(project, uniqueId, dbName, databaseObject, rs);
+                } catch (Exception ex) {
+                    MessageUtil.Notice.error(DataPivotBundle.message("data.pivot.notice.rom.data.error", dbName, String.valueOf(ex.getMessage())));
                 }
             }
         }
         return rs;
+    }
+
+    private static void collectRelations(Project project, String uniqueId, String dbName, DasObject databaseObject, List<DataPivotRelation> rs) {
+        for (DasObject table : collectTables(databaseObject)) {
+            String tableName = table.getName();
+            if (tableName == null) {
+                continue;
+            }
+
+            for (DasColumn column : DasUtil.getColumns(table)) {
+                String columnName = column.getName();
+                if (columnName == null) {
+                    continue;
+                }
+
+                DbElement dbElement = DbPsiFacade.getInstance(project).findElement(column);
+                if (!(dbElement instanceof DbColumn)) {
+                    continue;
+                }
+
+                DataPivotRelation dataPivotRelation = new DataPivotRelation();
+                dataPivotRelation.setDatabaseReference(DataPivotUtil.createDatabaseReference(uniqueId, dbName));
+                dataPivotRelation.setDatabaseName(dbName);
+                dataPivotRelation.setTableName(tableName);
+                dataPivotRelation.setColumnName(columnName);
+                dataPivotRelation.setDbColumn((DbColumn) dbElement);
+                rs.add(dataPivotRelation);
+            }
+        }
+    }
+
+    private static List<DasObject> collectTables(DasObject databaseObject) {
+        List<DasObject> tables = new ArrayList<>();
+        databaseObject.getDasChildren(ObjectKind.TABLE).forEach(tables::add);
+        databaseObject.getDasChildren(ObjectKind.SCHEMA).forEach(schema -> schema.getDasChildren(ObjectKind.TABLE).forEach(tables::add));
+        return tables;
     }
 }

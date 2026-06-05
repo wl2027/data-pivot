@@ -4,6 +4,15 @@
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-06-05
+### Changed
+- 迁移到 IntelliJ Platform Gradle Plugin 2.x 最新模板结构，构建目标调整为 IntelliJ IDEA 2025.3+ / build 253+。
+- 复用 IDEA Database Tools 数据源驱动，不再随插件打包 MySQL、PostgreSQL、Oracle、SQL Server、MongoDB 等数据库驱动。
+- 明确数据库支持边界：当前维护 MySQL、PostgreSQL、Oracle、SQL Server 的导航和查询能力，不宣称覆盖 IDEA 支持的全部数据库方言。
+
+### Added
+- 增加单元测试、IntelliJ Platform 集成测试和设置页 UI 组件测试任务：`unitTest`、`integrationTest`、`ideaUiTest`。
+
 ## [2.0.0] - 2025-03-23
 ### Refactor
 - 重构项目模块
@@ -60,7 +69,8 @@
 - Project initialization, covering data analysis, ORM & ROM navigation.
 - 项目初始化，包含数据分析、ORM&ROM导航。
 
-[Unreleased]: https://github.com/JetBrains/intellij-platform-plugin-template/compare/v2.0.2...HEAD
+[Unreleased]: https://github.com/wl2027/runtime-pivot/compare/2.1.0...HEAD
+[2.1.0]: https://github.com/wl2027/runtime-pivot/compare/2.0.0...2.1.0
 [2.0.0]: https://github.com/wl2027/runtime-pivot/compare/1.1.2...2.0.0
 [1.1.2]: https://github.com/wl2027/runtime-pivot/compare/1.1.1...1.1.2
 [1.1.1]: https://github.com/wl2027/runtime-pivot/compare/1.1.0...1.1.1

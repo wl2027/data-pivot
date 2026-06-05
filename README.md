@@ -18,10 +18,10 @@ ________      _____________________           __________._______   _____________
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-支持-blue.svg)
 ![Oracle](https://img.shields.io/badge/Oracle-支持-red.svg)
 ![SQL Server](https://img.shields.io/badge/SQL%20Server-支持-lightgrey.svg)
-![MongoDB](https://img.shields.io/badge/MongoDB-支持-brightgreen.svg)
+![Drivers](https://img.shields.io/badge/JDBC%20Drivers-IDEA%20Data%20Sources-blue.svg)
 
 ![Downloads](https://img.shields.io/badge/license-GPLv3-blue.svg)
-![Downloads](https://img.shields.io/badge/Java-11-brightgreen.svg?style=flat)
+![Downloads](https://img.shields.io/badge/Java-21-brightgreen.svg?style=flat)
 ![Downloads](https://img.shields.io/github/stars/wl2027/data-pivot)
 [![GitHub](https://img.shields.io/static/v1?label=&message=GitHub&logo=github&color=black&labelColor=555)](https://github.com/wl2027/data-pivot) 
 [![Gitee](https://img.shields.io/static/v1?label=&message=Gitee&logo=gitee&color=orange&labelColor=555)](https://gitee.com/wl2027/data-pivot)
@@ -48,7 +48,9 @@ In complex database scenarios, such as dealing with numerous database tables, mu
 
 **Database Support**
 
-Currently, data-pivot fully supports MySQL databases and is also compatible with Oracle, MongoDB, SQL Server, PostgreSQL, and other popular databases by default [Database Ranking: https://db-engines.com/en/ranking](https://db-engines.com/en/ranking).
+Since 2.x, data-pivot targets IntelliJ IDEA 2025.3+ and reuses the bundled Database Tools support in IDEA. Navigation and metadata discovery are based on IDEA data sources; query SQL generation is currently maintained for MySQL, PostgreSQL, Oracle, and SQL Server.
+
+The plugin does not bundle JDBC drivers anymore. It loads the driver already configured or downloaded by the IDEA data source, which keeps the plugin package small. It does not claim support for every database or dialect supported by IDEA; MongoDB and other non-JDBC/data-source-specific dialects are not supported by the query feature in 2.x.
 
 **Future Plans**
 
@@ -72,9 +74,9 @@ Detailed operation documents: [https://github.com/wl2027/data-pivot](https://git
 
 **数据库支持**
 
-目前，data-pivot 已全面支持 MySQL 数据库，并默认兼容 Oracle、MongoDB、SQL Server、PostgreSQL 等主流数据库。
+从 2.x 开始，data-pivot 面向 IntelliJ IDEA 2025.3+，复用 IDEA 内置的 Database Tools 能力。导航和元数据发现基于 IDEA 数据源；查询 SQL 生成当前维护 MySQL、PostgreSQL、Oracle、SQL Server。
 
-[数据库热度排行:https://db-engines.com/en/ranking](https://db-engines.com/en/ranking)。
+插件不再打包 JDBC 驱动，而是加载 IDEA 数据源已配置或已下载的驱动，从而减小插件体积。当前不宣称支持 IDEA 支持的全部数据库或全部 SQL 方言；MongoDB 和其他非 JDBC/特殊方言数据源在 2.x 中不支持查询功能。
 
 **未来规划**
 
@@ -159,8 +161,8 @@ Restart the **IDE** after installation.
 - [ ] DataGrip
 - [ ] GoLand
 - [ ] HUAWEI DevEco Studio
-- [x] **IntelliJ IDEA Ultimate**
-- [ ] IntelliJ IDEA Community
+- [x] **IntelliJ IDEA 2025.3+**
+- [x] IntelliJ IDEA Community 2025.3+
 - [ ] IntelliJ IDEA Educational
 - [ ] MPS
 - [ ] PhpStorm
@@ -170,6 +172,29 @@ Restart the **IDE** after installation.
 - [ ] Rider
 - [ ] RubyMine
 - [ ] WebStorm
+
+## Database And Driver Support
+
+| Capability | Current support |
+| --- | --- |
+| IDE baseline | IntelliJ IDEA 2025.3+ / build 253+. Older IDEA builds are intentionally not supported. |
+| Database metadata and navigation | Uses IDEA Database Tools data sources. Tested and recognized: MySQL, PostgreSQL, Oracle, SQL Server. |
+| Query SQL generation | MySQL, PostgreSQL, Oracle, SQL Server. |
+| Driver loading | Reuses the JDBC driver configured in the IDEA data source. The plugin no longer bundles MySQL/PostgreSQL/Oracle/SQL Server/MongoDB driver jars. |
+| Not guaranteed | Full coverage of every IDEA-supported database dialect, MongoDB query execution, Redis, SQLite, MariaDB, Sybase, generic SQL dialects, and vendor-specific query syntax not listed above. |
+
+If a data source driver has not been downloaded or configured in IDEA, data-pivot cannot create the JDBC connection. Configure the data source in IDEA's Database tool window first.
+
+## Development And Tests
+
+Use JDK 21 for local development.
+
+```bash
+./gradlew unitTest integrationTest ideaUiTest
+./gradlew check buildPlugin
+```
+
+The `integrationTest` and `ideaUiTest` tasks run against the IntelliJ Platform test framework with isolated IDEA test directories under `build/idea-test/`.
 
 
 ## Contributing

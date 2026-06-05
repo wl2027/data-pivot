@@ -3,84 +3,59 @@ import org.jetbrains.changelog.markdownToHTML
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
-    id("java") // Java support
-    alias(libs.plugins.kotlin) // Kotlin support
-    alias(libs.plugins.intelliJPlatform) // IntelliJ Platform Gradle Plugin
-    alias(libs.plugins.changelog) // Gradle Changelog Plugin
-    alias(libs.plugins.qodana) // Gradle Qodana Plugin
-    alias(libs.plugins.kover) // Gradle Kover Plugin
+    id("java")
+    id("org.jetbrains.kotlin.jvm")
+    id("org.jetbrains.intellij.platform")
+    id("org.jetbrains.changelog")
 }
 
-group = providers.gradleProperty("pluginGroup").get()
-version = providers.gradleProperty("pluginVersion").get()
+group = providers.gradleProperty("group").get()
+version = providers.gradleProperty("version").get()
 
-// Set the JVM language level used to build the project.
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
-// Configure project's dependencies
-repositories {
-//    maven { url = uri("https://mirrors.cloud.tencent.com/nexus/repository/maven-public/") }
-    maven { url = uri("https://repo.huaweicloud.com/repository/maven/") }
-    mavenCentral()
-//    mavenLocal()
-//    maven(url = "https://maven.aliyun.com/repository/public")
-//    maven(url = "https://maven-central.storage-download.googleapis.com/repos/central/data/")
-//    maven(url = "https://www.jetbrains.com/intellij-repository/releases")
-//    maven(url = "https://jitpack.io")
-
-    // IntelliJ Platform Gradle Plugin Repositories Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-repositories-extension.html
-    intellijPlatform {
-        defaultRepositories()
-    }
-}
-
-// Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
-    // MySQL JDBC Driver
-    implementation("mysql:mysql-connector-java:8.0.25")
-    // PostgreSQL JDBC Driver
-    implementation("org.postgresql:postgresql:42.2.20")
-    // Oracle JDBC Driver
-    implementation("com.oracle.database.jdbc:ojdbc8:19.8.0.0")
-    // HikariCP for connection pooling
-//    implementation("com.zaxxer:HikariCP:4.0.3")
-    // MongoDB Driver
-    implementation("org.mongodb:mongo-java-driver:3.12.10")
-    // SQL Server JDBC Driver
-    implementation("net.sourceforge.jtds:jtds:1.3.1")
-    //implementation("com.microsoft.sqlserver:mssql-jdbc:9.2.1.jre8")
-    implementation("com.microsoft.sqlserver:mssql-jdbc:9.4.0.jre8")
-//    implementation(libs.annotations)
     implementation("cn.hutool:hutool-all:5.8.23")
     implementation("org.apache.commons:commons-text:1.9")
-//    implementation("org.graalvm.js:js:22.3.0")
-//    implementation("org.graalvm.js:js-scriptengine:22.3.0")
-    testImplementation(libs.junit)
 
-    // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
+    testImplementation("junit:junit:4.13.2")
+
     intellijPlatform {
-        create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
+        when (providers.gradleProperty("platformType").get()) {
+            "IC" -> intellijIdeaCommunity(providers.gradleProperty("platformVersion"))
+            "IU" -> intellijIdeaUltimate(providers.gradleProperty("platformVersion"))
+            "IDEA" -> intellijIdea(providers.gradleProperty("platformVersion"))
+            else -> throw GradleException("Unsupported platformType. Use IDEA, IC, or IU.")
+        }
 
-        // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
-        bundledPlugins(providers.gradleProperty("platformBundledPlugins").map { it.split(',') })
+        bundledPlugins(
+            providers.gradleProperty("platformBundledPlugins").map {
+                it.split(',')
+                    .map(String::trim)
+                    .filter(String::isNotEmpty)
+            },
+        )
 
-        // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
-        plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
+        plugins(
+            providers.gradleProperty("platformPlugins").map {
+                it.split(',')
+                    .map(String::trim)
+                    .filter(String::isNotEmpty)
+            },
+        )
 
-        instrumentationTools()
-        pluginVerifier()
-        zipSigner()
         testFramework(TestFrameworkType.Platform)
     }
 }
-// Configure IntelliJ Platform Gradle Plugin - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-extension.html
-intellijPlatform {
-    pluginConfiguration {
-        version = providers.gradleProperty("pluginVersion")
 
-        // Extract the <!-- Plugin description --> section from README.md and provide for the plugin's manifest
+intellijPlatform {
+    instrumentCode = false
+
+    pluginConfiguration {
+        version = providers.gradleProperty("version")
+
         description = providers.fileContents(layout.projectDirectory.file("README.md")).asText.map {
             val start = "<!-- Plugin description -->"
             val end = "<!-- Plugin description end -->"
@@ -93,9 +68,8 @@ intellijPlatform {
             }
         }
 
-        val changelog = project.changelog // local variable for configuration cache compatibility
-        // Get the latest available change notes from the changelog file
-        changeNotes = providers.gradleProperty("pluginVersion").map { pluginVersion ->
+        val changelog = project.changelog
+        changeNotes = providers.gradleProperty("version").map { pluginVersion ->
             with(changelog) {
                 renderItem(
                     (getOrNull(pluginVersion) ?: getUnreleased())
@@ -108,7 +82,10 @@ intellijPlatform {
 
         ideaVersion {
             sinceBuild = providers.gradleProperty("pluginSinceBuild")
-            untilBuild = providers.gradleProperty("pluginUntilBuild")
+            val pluginUntilBuild = providers.gradleProperty("pluginUntilBuild")
+            if (pluginUntilBuild.isPresent && pluginUntilBuild.get().isNotBlank()) {
+                untilBuild = pluginUntilBuild
+            }
         }
     }
 
@@ -120,10 +97,9 @@ intellijPlatform {
 
     publishing {
         token = providers.environmentVariable("PUBLISH_TOKEN")
-        // The pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
-        // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
-        // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-        channels = providers.gradleProperty("pluginVersion").map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
+        channels = providers.gradleProperty("version").map {
+            listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" })
+        }
     }
 
     pluginVerification {
@@ -133,42 +109,99 @@ intellijPlatform {
     }
 }
 
-// Configure Gradle Changelog Plugin - read more: https://github.com/JetBrains/gradle-changelog-plugin
 changelog {
     groups.empty()
     repositoryUrl = providers.gradleProperty("pluginRepositoryUrl")
 }
 
-// Configure Gradle Kover Plugin - read more: https://github.com/Kotlin/kotlinx-kover#configuration
-kover {
-    reports {
-        total {
-            xml {
-                onCheck = true
+tasks {
+    val defaultTest = named<Test>("test")
+
+    withType<Test> {
+        useJUnit()
+        jvmArgs(
+            "--add-opens=java.base/java.lang=ALL-UNNAMED",
+            "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED",
+            "--add-opens=java.base/jdk.internal.ref=ALL-UNNAMED",
+            "--add-opens=java.base/java.nio=ALL-UNNAMED",
+            "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
+            "--add-opens=java.base/java.util=ALL-UNNAMED",
+            "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED",
+            "--add-opens=java.desktop/java.awt=ALL-UNNAMED",
+            "--add-opens=java.desktop/java.awt.event=ALL-UNNAMED",
+            "--add-opens=java.desktop/javax.swing=ALL-UNNAMED",
+            "--add-opens=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED",
+            "--add-opens=java.desktop/sun.awt=ALL-UNNAMED",
+            "--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED",
+            "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED",
+            "--add-exports=java.desktop/sun.awt=ALL-UNNAMED",
+            "--add-exports=java.desktop/sun.font=ALL-UNNAMED",
+        )
+        systemProperty("idea.system.path", layout.buildDirectory.dir("idea-test/$name/system").get().asFile.absolutePath)
+        systemProperty("idea.config.path", layout.buildDirectory.dir("idea-test/$name/config").get().asFile.absolutePath)
+        systemProperty("idea.log.path", layout.buildDirectory.dir("idea-test/$name/log").get().asFile.absolutePath)
+        doFirst {
+            delete(layout.buildDirectory.dir("idea-test/$name"))
+            val platformHome = configurations.named("intellijPlatformDependency").get().singleFile
+            val jnaArch = when (System.getProperty("os.arch")) {
+                "aarch64", "arm64" -> "aarch64"
+                else -> "x86-64"
             }
+            systemProperty("jna.boot.library.path", platformHome.resolve("lib/jna/$jnaArch").absolutePath)
         }
     }
-}
 
-tasks {
+    test {
+        description = "Runs fast unit tests."
+        exclude("**/*IntegrationTest.class", "**/*UiTest.class")
+    }
+
     runIde {
         jvmArgs("--add-opens=java.base/jdk.internal.org.objectweb.asm=ALL-UNNAMED")
         jvmArgs("--add-opens=java.base/jdk.internal.org.objectweb.asm.tree=ALL-UNNAMED")
-        jvmArgs("-javaagent:D:\\001_IDEA\\jetbra\\ja-netfilter.jar=jetbrains")
-    }
-    
-    withType<JavaCompile> {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
-        options.encoding = "UTF-8"
     }
 
-    wrapper {
-        gradleVersion = providers.gradleProperty("gradleVersion").get()
+    withType<JavaCompile> {
+        sourceCompatibility = "21"
+        targetCompatibility = "21"
+        options.encoding = "UTF-8"
     }
 
     publishPlugin {
         dependsOn(patchChangelog)
+    }
+
+    register<Test>("unitTest") {
+        description = "Runs fast unit tests."
+        group = "verification"
+        dependsOn("prepareTest")
+        testClassesDirs = defaultTest.get().testClassesDirs
+        classpath = defaultTest.get().classpath
+        include("**/tool/*Test.class")
+    }
+
+    register<Test>("integrationTest") {
+        description = "Runs IntelliJ Platform integration tests."
+        group = "verification"
+        dependsOn("prepareTest")
+        testClassesDirs = defaultTest.get().testClassesDirs
+        classpath = defaultTest.get().classpath
+        systemProperty("idea.load.plugins", "false")
+        include("**/*IntegrationTest.class")
+    }
+
+    register<Test>("ideaUiTest") {
+        description = "Runs headless IntelliJ UI component tests."
+        group = "verification"
+        dependsOn("prepareTest")
+        testClassesDirs = defaultTest.get().testClassesDirs
+        classpath = defaultTest.get().classpath
+        systemProperty("idea.load.plugins", "false")
+        include("**/*UiTest.class")
+    }
+
+    check {
+        dependsOn("unitTest", "integrationTest", "ideaUiTest")
     }
 }
 
@@ -192,4 +225,3 @@ intellijPlatformTesting {
         }
     }
 }
-

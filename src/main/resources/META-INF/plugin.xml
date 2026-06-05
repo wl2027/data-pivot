@@ -51,18 +51,13 @@
         </group>
     </actions>
 
-    <project-components>
-        <component>
-            <implementation-class>com.data.pivot.plugin.config.DataPivotInitializer</implementation-class>
-        </component>
-    </project-components>
-
     <projectListeners>
         <listener class="com.data.pivot.plugin.config.listener.RefreshSchemaActionListener"
                   topic="com.intellij.openapi.actionSystem.ex.AnActionListener"/>
     </projectListeners>
 
     <extensions defaultExtensionNs="com.intellij">
+        <postStartupActivity implementation="com.data.pivot.plugin.config.DataPivotInitializer" />
         <codeInsight.lineMarkerProvider language="JAVA" order="last"
                                         implementationClass="com.data.pivot.plugin.config.DataPivotLineMarkerProvider"/>
         <projectService serviceImplementation="com.data.pivot.plugin.context.DataPivotApplication" />

@@ -1,17 +1,13 @@
 package com.data.pivot.plugin.tool;
 
-import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.data.pivot.plugin.config.DataPivotLineMarkerProvider;
 import com.data.pivot.plugin.constants.DataPivotConstants;
 import com.data.pivot.plugin.entity.DataPivotDatabaseInfo;
 import com.data.pivot.plugin.entity.DatabaseQueryConfig;
 import com.data.pivot.plugin.enums.DBType;
-import com.data.pivot.plugin.i18n.DataPivotBundle;
 import com.intellij.database.cli.DbCliUtil;
-import com.intellij.database.dataSource.DataSourceSchemaMapping;
 import com.intellij.database.dataSource.DatabaseDriver;
-import com.intellij.database.dataSource.DatabaseDriverImpl;
 import com.intellij.database.dataSource.LocalDataSource;
 import com.intellij.database.dataSource.LocalDataSourceManager;
 import com.intellij.database.model.ObjectName;
@@ -19,6 +15,7 @@ import com.intellij.database.psi.DbColumn;
 import com.intellij.database.psi.DbDataSource;
 import com.intellij.database.psi.DbElement;
 import com.intellij.database.psi.DbTable;
+import com.intellij.database.util.TreePattern;
 import com.intellij.database.util.TreePatternNode;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.psi.PsiClass;
@@ -41,25 +38,12 @@ public class DataGripUtil {
         List<DataPivotDatabaseInfo> dataPivotDatabaseInfoList = new ArrayList<>();
         String password = DbCliUtil.getPassword((LocalDataSource) dataSource);
         DatabaseDriver databaseDriver = dataSource.getDatabaseDriver();
-        String driverClassName = dataSource.getDatabaseDriver().getDriverClass();
+        String driverClassName = dataSource.getDriverClass();
+        List<String> driverClassRootUrls = DataSourceDriverUtil.getDriverClassRootUrls(dataSource);
         String uniqueId = dataSource.getUniqueId();
         String username = dataSource.getUsername();
-        //是否需要类加载?
-        try {
-            Class.forName(dataSource.getDriverClass());
-        } catch (ClassNotFoundException e) {
-            //MessageUtil.Notice.error(DataPivotBundle.message("data.pivot.notice.connection.driver.null",driverClassName));
-            return dataPivotDatabaseInfoList;
-        }
-        Map<String, String> driverProperties = ((DatabaseDriverImpl) databaseDriver).getDriverProperties();
-        TreePatternNode.Group group = ((DataSourceSchemaMapping) ((LocalDataSource) dataSource).getSchemaMapping()).getIntrospectionScope().root.groups[0];
-        Object[] children = (Object[]) ReflectUtil.getFieldValue(group, "children");
-        if (children == null) {
-            children = (Object[]) ReflectUtil.getFieldValue(group, "positiveChildren");
-        }
-        TreePatternNode.BaseNaming naming = (TreePatternNode.BaseNaming) ReflectUtil.getFieldValue(children[0], "naming");
-        for (ObjectName name : (ObjectName[]) ReflectUtil.getFieldValue(naming, "names")) {
-            String dbName = name.name;
+        Map<String, String> driverProperties = databaseDriver.getDriverProperties();
+        for (String dbName : getIntrospectionObjectNames(dataSource)) {
             String jdbcUrl = DatabaseUtil.buildConnectionString(dataSource.getUrl(), driverProperties, dbName);
             DataPivotDatabaseInfo dataPivotDatabaseInfo = new DataPivotDatabaseInfo();
             dataPivotDatabaseInfo.setUniqueId(uniqueId);
@@ -75,10 +59,45 @@ public class DataGripUtil {
             dataPivotDatabaseInfo.setDatabaseParam(driverProperties);
             dataPivotDatabaseInfo.setUrl(jdbcUrl);
             dataPivotDatabaseInfo.setDriverClassName(driverClassName);
+            dataPivotDatabaseInfo.setDriverClassRootUrls(driverClassRootUrls);
             dataPivotDatabaseInfo.setDatabaseReference(DataPivotUtil.createDatabaseReference(uniqueId, dbName));
             dataPivotDatabaseInfoList.add(dataPivotDatabaseInfo);
         }
         return dataPivotDatabaseInfoList;
+    }
+
+    private static List<String> getIntrospectionObjectNames(LocalDataSource dataSource) {
+        List<String> names = new ArrayList<>();
+        TreePattern scope = dataSource.getIntrospectionScope();
+        if (scope != null && scope.root != null) {
+            collectNamingNames(scope.root, names);
+        }
+        if (!names.isEmpty()) {
+            return names;
+        }
+        dataSource.getModel().getModelRoots().forEach(root -> names.add(root.getName()));
+        return names;
+    }
+
+    private static void collectNamingNames(TreePatternNode node, List<String> names) {
+        if (node.naming != null && node.naming.names != null) {
+            for (ObjectName name : node.naming.names) {
+                if (name.name != null && !name.name.isBlank() && !names.contains(name.name)) {
+                    names.add(name.name);
+                }
+            }
+        }
+        if (node.groups == null) {
+            return;
+        }
+        for (TreePatternNode.Group group : node.groups) {
+            if (group.children == null) {
+                continue;
+            }
+            for (TreePatternNode child : group.children) {
+                collectNamingNames(child, names);
+            }
+        }
     }
 
     public static DatabaseQueryConfig loadDatabaseQueryConfig(LocalDataSource localDataSource, DbTable tableInfo, List<String> allCaretsText, DbColumn columnInfo) {
@@ -87,7 +106,7 @@ public class DataGripUtil {
 
         String url = localDataSource.getUrl();
         DatabaseDriver databaseDriver = localDataSource.getDatabaseDriver();
-        Map<String, String> driverProperties = ((DatabaseDriverImpl) databaseDriver).getDriverProperties();
+        Map<String, String> driverProperties = databaseDriver.getDriverProperties();
         String jdbcUrl = DatabaseUtil.buildConnectionString(url, driverProperties);
 
         String username = localDataSource.getUsername();
@@ -110,7 +129,22 @@ public class DataGripUtil {
         if (StrUtil.isEmpty(dbName)){
             dbName = schema;
         }
-        return new DatabaseQueryConfig(uniqueId, DBType.getByName(type),url,username,password,dbName,schema,tableInfo.getName(),allCaretsText,columnInfo.getName());
+        return new DatabaseQueryConfig(
+                uniqueId,
+                DBType.getByName(type),
+                jdbcUrl,
+                username,
+                password,
+                localDataSource.getDriverClass(),
+                DataSourceDriverUtil.getDriverClassRootUrls(localDataSource),
+                dbName,
+                schema,
+                tableInfo.getName(),
+                allCaretsText,
+                columnInfo.getName(),
+                null,
+                null
+        );
     }
 
     public static @Nullable DatabaseQueryConfig getDatabaseQueryConfigByPsiElement(@NotNull PsiElement psiElement,Editor editor) {

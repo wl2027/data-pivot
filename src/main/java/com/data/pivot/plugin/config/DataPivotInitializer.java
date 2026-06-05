@@ -4,38 +4,34 @@ package com.data.pivot.plugin.config;
 import com.data.pivot.plugin.entity.custom.DataPivotStrategyInfo;
 import com.data.pivot.plugin.tool.DatabaseUtil;
 import com.data.pivot.plugin.context.DataPivotApplication;
-import com.data.pivot.plugin.tool.ProjectUtils;
-import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.startup.StartupActivity;
+import com.intellij.openapi.util.Disposer;
 
-public class DataPivotInitializer implements ProjectComponent {
-
-    @Override
-    public void projectOpened() {
-        Project currProject = ProjectUtils.getCurrProject();
-        initDefaultStrategy(currProject);
-        initDataPivotDatabaseInfo(currProject);
-        initDataPivotSettingInfo(currProject);
-    }
+public class DataPivotInitializer implements StartupActivity.DumbAware {
 
     @Override
-    public void projectClosed() {
-        DatabaseUtil.closeConnections();
+    public void runActivity(Project project) {
+        initDefaultStrategy(DataPivotApplication.getInstance(project));
+        initDataPivotDatabaseInfo(project);
+        initDataPivotSettingInfo(project);
+        Disposer.register(project, DatabaseUtil::closeConnections);
     }
-    private void initDefaultStrategy(Project project) {
+
+    static void initDefaultStrategy(DataPivotApplication application) {
         DataPivotStrategyInfo jpaStrategy = DataPivotDefaultInitializer.getJPAStrategy();
         DataPivotStrategyInfo mpStrategy = DataPivotDefaultInitializer.getMPStrategy();
         DataPivotStrategyInfo huStrategy = DataPivotDefaultInitializer.getHUStrategy();
-        DataPivotApplication.getInstance().MAPPER.DEFAULT_STRATEGY_MAPPER.put(jpaStrategy.getCode(), jpaStrategy);
-        DataPivotApplication.getInstance().MAPPER.DEFAULT_STRATEGY_MAPPER.put(mpStrategy.getCode(), mpStrategy);
-        DataPivotApplication.getInstance().MAPPER.DEFAULT_STRATEGY_MAPPER.put(huStrategy.getCode(), huStrategy);
+        application.MAPPER.DEFAULT_STRATEGY_MAPPER.put(jpaStrategy.getCode(), jpaStrategy);
+        application.MAPPER.DEFAULT_STRATEGY_MAPPER.put(mpStrategy.getCode(), mpStrategy);
+        application.MAPPER.DEFAULT_STRATEGY_MAPPER.put(huStrategy.getCode(), huStrategy);
     }
 
     static public void initDataPivotDatabaseInfo(Project project) {
-        DataPivotApplication.getInstance().CACHE.DP_DB_INFO_LIST_CACHE.loading(project);
+        DataPivotApplication.getInstance(project).CACHE.DP_DB_INFO_LIST_CACHE.loading(project);
     }
     private void initDataPivotSettingInfo(Project project) {
-        DataPivotApplication.getInstance().CACHE.DP_MAPPING_SETTING_INFO_LIST_CACHE.loading(project);
+        DataPivotApplication.getInstance(project).CACHE.DP_MAPPING_SETTING_INFO_LIST_CACHE.loading(project);
     }
 
     public static boolean isInitDataPivotRelation() {
@@ -43,7 +39,7 @@ public class DataPivotInitializer implements ProjectComponent {
     }
 
     public static void initDataPivotRelation(Project project) {
-        DataPivotApplication.getInstance().CACHE.DP_RELATION_INFO_LIST_CACHE.loading(project);
+        DataPivotApplication.getInstance(project).CACHE.DP_RELATION_INFO_LIST_CACHE.loading(project);
     }
 
 }

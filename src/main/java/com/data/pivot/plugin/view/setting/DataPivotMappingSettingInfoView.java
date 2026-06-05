@@ -9,16 +9,17 @@ import com.data.pivot.plugin.i18n.DataPivotBundle;
 import com.data.pivot.plugin.tool.DataPivotUtil;
 import com.data.pivot.plugin.tool.ProjectUtils;
 import com.data.pivot.plugin.view.DataPivotTableRowView;
+import com.intellij.ide.util.PackageChooserDialog;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.util.ExceptionUtil;
+import com.intellij.psi.PsiPackage;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -69,10 +70,54 @@ public class DataPivotMappingSettingInfoView  extends DataPivotTableRowView<Data
     public DataPivotMappingSettingInfoView() {
         super(ProjectUtils.getCurrProject());
         this.project = ProjectUtils.getCurrProject();
+        this.contentPane = buildContentPane();
         this.initPanel();
         this.initEvent();
         super.init();
         setTitle(DataPivotBundle.message("data.pivot.view.mapping.setting.info.title"));
+    }
+
+    private JPanel buildContentPane() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        this.moduleComboBox = new JComboBox<>();
+        this.databaseComboBox = new JComboBox<>();
+        this.packageField = new JTextField();
+        this.packageChooseButton = new JButton("choose");
+        this.typeComboBox = new JComboBox();
+
+        addRow(panel, 0, "module", moduleComboBox, null);
+        addRow(panel, 1, "package", packageField, packageChooseButton);
+        addRow(panel, 2, "database", databaseComboBox, null);
+        addRow(panel, 3, "type", typeComboBox, null);
+        return panel;
+    }
+
+    private static void addRow(JPanel panel, int row, String labelText, JComponent field, JButton button) {
+        GridBagConstraints labelConstraints = new GridBagConstraints();
+        labelConstraints.gridx = 0;
+        labelConstraints.gridy = row;
+        labelConstraints.anchor = GridBagConstraints.WEST;
+        labelConstraints.insets = new Insets(4, 0, 4, 8);
+        panel.add(new JLabel(labelText), labelConstraints);
+
+        GridBagConstraints fieldConstraints = new GridBagConstraints();
+        fieldConstraints.gridx = 1;
+        fieldConstraints.gridy = row;
+        fieldConstraints.weightx = 1.0;
+        fieldConstraints.fill = GridBagConstraints.HORIZONTAL;
+        fieldConstraints.insets = new Insets(4, 0, 4, button == null ? 0 : 8);
+        panel.add(field, fieldConstraints);
+
+        if (button != null) {
+            GridBagConstraints buttonConstraints = new GridBagConstraints();
+            buttonConstraints.gridx = 2;
+            buttonConstraints.gridy = row;
+            buttonConstraints.fill = GridBagConstraints.HORIZONTAL;
+            buttonConstraints.insets = new Insets(4, 0, 4, 0);
+            panel.add(button, buttonConstraints);
+        }
     }
 
     public void initDatabaseComponent(){
@@ -89,33 +134,14 @@ public class DataPivotMappingSettingInfoView  extends DataPivotTableRowView<Data
             // 刷新路径
             //refreshItem();
         });
-        try {
-            Class<?> cls = Class.forName("com.intellij.ide.util.PackageChooserDialog");
-            //添加包选择事件
-            packageChooseButton.addActionListener(e -> {
-                try {
-                    Constructor<?> constructor = cls.getConstructor(String.class, Project.class);
-                    Object dialog = constructor.newInstance("Package Chooser", project);
-                    // 显示窗口
-                    Method showMethod = cls.getMethod("show");
-                    showMethod.invoke(dialog);
-                    // 获取选中的包名
-                    Method getSelectedPackageMethod = cls.getMethod("getSelectedPackage");
-                    Object psiPackage = getSelectedPackageMethod.invoke(dialog);
-                    if (psiPackage != null) {
-                        Method getQualifiedNameMethod = psiPackage.getClass().getMethod("getQualifiedName");
-                        String packageName = (String) getQualifiedNameMethod.invoke(psiPackage);
-                        packageField.setText(packageName);
-                    }
-                } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e1) {
-                    ExceptionUtil.rethrow(e1);
-                }
-            });
-        } catch (ClassNotFoundException e) {
-            // 没有PackageChooserDialog，并非支持Java的IDE，禁用相关UI组件
-            packageField.setEnabled(false);
-            packageChooseButton.setEnabled(false);
-        }
+        packageChooseButton.addActionListener(e -> {
+            PackageChooserDialog dialog = new PackageChooserDialog("Package Chooser", project);
+            dialog.show();
+            PsiPackage psiPackage = dialog.getSelectedPackage();
+            if (psiPackage != null) {
+                packageField.setText(psiPackage.getQualifiedName());
+            }
+        });
     }
 
     @Override

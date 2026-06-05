@@ -44,10 +44,10 @@ public class DataPivotMappingSettingView implements Configurable {
         dataPivotMappingSettingInfoList.addAll(DataPivotApplication.getInstance().CACHE.DP_MAPPING_SETTING_INFO_LIST_CACHE.get());
         this.tableComponent = new DataPivotTableView<>(
                 ListUtil.of(
-                        new DataPivotTableColumn<>(DataPivotBundle.message("data.pivot.dialog.setting.module"), DataPivotMappingSettingInfo::getModelName),
-                        new DataPivotTableColumn<>(DataPivotBundle.message("data.pivot.dialog.setting.package"), DataPivotMappingSettingInfo::getPackageName),
-                        new DataPivotTableColumn<>(DataPivotBundle.message("data.pivot.dialog.setting.database"), DataPivotMappingSettingInfo::getDatabasePath),
-                        new DataPivotTableColumn<>(DataPivotBundle.message("data.pivot.dialog.setting.strategy"), DataPivotMappingSettingInfo::getStrategyCode)
+                        new DataPivotTableColumn<>(DataPivotBundle.message("data.pivot.dialog.setting.module"), DataPivotMappingSettingInfo::getModelName, (data, value) -> data.setModelName((String) value)),
+                        new DataPivotTableColumn<>(DataPivotBundle.message("data.pivot.dialog.setting.package"), DataPivotMappingSettingInfo::getPackageName, (data, value) -> data.setPackageName((String) value)),
+                        new DataPivotTableColumn<>(DataPivotBundle.message("data.pivot.dialog.setting.database"), DataPivotMappingSettingInfo::getDatabasePath, (data, value) -> data.setDatabasePath((String) value)),
+                        new DataPivotTableColumn<>(DataPivotBundle.message("data.pivot.dialog.setting.strategy"), DataPivotMappingSettingInfo::getStrategyCode, (data, value) -> data.setStrategyCode((String) value))
                 ),
                 dataPivotMappingSettingInfoList,
                 DataPivotMappingSettingInfoView::new,

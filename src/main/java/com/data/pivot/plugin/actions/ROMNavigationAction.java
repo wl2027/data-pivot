@@ -1,6 +1,5 @@
 package com.data.pivot.plugin.actions;
 
-import cn.hutool.core.util.ReflectUtil;
 import com.data.pivot.plugin.context.DataPivotApplication;
 import com.data.pivot.plugin.i18n.DataPivotBundle;
 import com.data.pivot.plugin.model.BaseAnAction;
@@ -8,20 +7,12 @@ import com.data.pivot.plugin.model.DataPivotObject;
 import com.data.pivot.plugin.model.DataPivotRelation;
 import com.data.pivot.plugin.tool.MessageUtil;
 import com.data.pivot.plugin.tool.PsiElementUtil;
-import com.intellij.database.DatabaseDataKeys;
 import com.intellij.database.datagrid.DataGrid;
 import com.intellij.database.datagrid.DataGridUtil;
 import com.intellij.database.psi.DbColumn;
-import com.intellij.database.view.SelectInDatabaseView;
-import com.intellij.ide.SelectInContext;
-import com.intellij.ide.actions.SelectInContextImpl;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.DataContext;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.util.PsiNavigateUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,13 +20,9 @@ public class ROMNavigationAction extends BaseAnAction {
     @Override
     protected void action(AnActionEvent e) {
         PsiElement psiElement = e.getData(CommonDataKeys.PSI_ELEMENT);
-        if(isDataGrid(e)){
-            Project project = e.getProject();
-            SelectInContext context = project == null ? null : SelectInContextImpl.createContext(e);
-            if (context != null) {
-                PsiElement element = ReflectUtil.invokeStatic(ReflectUtil.getMethodByName(SelectInDatabaseView.class,"askProvidersInner"),context,isStrict(e.getDataContext()));
-                psiElement = element;
-            }
+        if (psiElement == null) {
+            MessageUtil.Dialog.info(DataPivotBundle.message("data.pivot.hint.relation.mapping.null", ""));
+            return;
         }
         DataPivotRelation dataPivotRelation = PsiElementUtil.getDataPivotRelation(psiElement);
         if (dataPivotRelation.getDataPivotMappingSettingInfo() == null) {
@@ -57,12 +44,6 @@ public class ROMNavigationAction extends BaseAnAction {
         return dataGrid!=null&&dataGrid.getVisibleRows().size()*dataGrid.getVisibleColumns().size()>0;
     }
 
-    private static boolean isStrict(DataContext dataContext) {
-        Editor editor = (Editor)CommonDataKeys.EDITOR.getData(dataContext);
-        PsiFile file = (PsiFile)CommonDataKeys.PSI_FILE.getData(dataContext);
-        return editor != null && file != null && file.findReferenceAt(editor.getCaretModel().getOffset()) != null;
-    }
-
     @Override
     public void update(@NotNull AnActionEvent e) {
         PsiElement psiElement = e.getData(CommonDataKeys.PSI_ELEMENT);
@@ -75,7 +56,7 @@ public class ROMNavigationAction extends BaseAnAction {
 
     }
     private boolean isEnabled(@NotNull AnActionEvent e) {
-        DataGrid dataGrid = (DataGrid)e.getData(DatabaseDataKeys.DATA_GRID_KEY);
+        DataGrid dataGrid = DataGridUtil.getDataGrid(e.getDataContext());
         if (dataGrid == null) {
             return false;
         }

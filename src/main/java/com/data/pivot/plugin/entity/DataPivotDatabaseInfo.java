@@ -11,6 +11,7 @@ import java.util.Map;
 public class DataPivotDatabaseInfo implements DataPivotCache {
     private String uniqueId;//DG-ID
     private String driverClassName;//驱动类
+    private List<String> driverClassRootUrls;//IDE数据源驱动classpath
     private Icon icon; //图标
     private String dataSourceName;//数据源名
     private String dataSourceVersion;//数据源名
@@ -41,6 +42,14 @@ public class DataPivotDatabaseInfo implements DataPivotCache {
 
     public void setDriverClassName(String driverClassName) {
         this.driverClassName = driverClassName;
+    }
+
+    public List<String> getDriverClassRootUrls() {
+        return driverClassRootUrls;
+    }
+
+    public void setDriverClassRootUrls(List<String> driverClassRootUrls) {
+        this.driverClassRootUrls = driverClassRootUrls;
     }
 
     public Icon getIcon() {

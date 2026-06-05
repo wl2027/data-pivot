@@ -1,30 +1,36 @@
 package com.data.pivot.plugin.enums;
 
-import com.intellij.database.Dbms;
+import java.util.Arrays;
 
 public enum DBType {
-    MYSQL(Dbms.MYSQL.getName()),
-    POSTGRES(Dbms.POSTGRES.getName()),
-    ORACLE(Dbms.ORACLE.getName()),
-    MSSQL(Dbms.MSSQL.getName()),
-    MONGO(Dbms.MONGO.getName()),
+    MYSQL("MySQL"),
+    POSTGRES("PostgreSQL", "Postgres"),
+    ORACLE("Oracle"),
+    MSSQL("SQL Server", "Microsoft SQL Server", "MSSQL"),
+    MONGO("MongoDB", "Mongo"),
     ;
-    private String name;
+    private final String name;
+    private final String[] aliases;
 
     public String getName() {
         return name;
     }
 
     public static DBType getByName(String name) {
+        if (name == null) {
+            return null;
+        }
         for (DBType value : values()) {
-            if (value.getName().equals(name)) {
+            if (value.getName().equalsIgnoreCase(name)
+                    || Arrays.stream(value.aliases).anyMatch(alias -> alias.equalsIgnoreCase(name))) {
                 return value;
             }
         }
         return null;
     }
 
-    DBType(String name) {
+    DBType(String name, String... aliases) {
         this.name = name;
+        this.aliases = aliases;
     }
 }

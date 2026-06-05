@@ -1,7 +1,5 @@
 package com.data.pivot.plugin.view;
 
-import cn.hutool.core.lang.func.LambdaUtil;
-import cn.hutool.core.util.ReflectUtil;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.EditableModel;
@@ -36,10 +34,7 @@ public class DataPivotTableView<T> extends DefaultTableModel implements Editable
     /**
      * 类型
      */
-    private Class<T> tClass;
-
     public DataPivotTableView(List<DataPivotTableColumn<T>> tableColumns, List<T> dataList, Supplier<DataPivotTableRowView<T>> dataPivotTableRowViewSupplier, Class<T> tClass) {
-        this.tClass=tClass;
         this.dataPivotTableRowViewSupplier=dataPivotTableRowViewSupplier;
         this.initTableColumns(tableColumns);
         this.initTable();
@@ -53,7 +48,9 @@ public class DataPivotTableView<T> extends DefaultTableModel implements Editable
     }
     private Vector<String> toRow(T data) {
         Vector<String> vector = new Vector<>();
-        this.tableColumns.stream().map(tableColumn -> (String)ReflectUtil.getFieldValue(data,LambdaUtil.getFieldName(tableColumn.getFieldFun()))).forEach(vector::add);
+        this.tableColumns.stream()
+                .map(tableColumn -> String.valueOf(tableColumn.getFieldFun().callWithRuntimeException(data)))
+                .forEach(vector::add);
         return vector;
     }
 
@@ -91,7 +88,9 @@ public class DataPivotTableView<T> extends DefaultTableModel implements Editable
         if (row < this.dataList.size()) {
             super.setValueAt(value, row, column);
             T obj = this.dataList.get(row);
-            ReflectUtil.setFieldValue(obj, LambdaUtil.getFieldName(tableColumns.get(column).getFieldFun()),value);
+            if (tableColumns.get(column).getFieldSetter() != null) {
+                tableColumns.get(column).getFieldSetter().accept(obj, value);
+            }
         }
     }
     @Override
@@ -101,12 +100,11 @@ public class DataPivotTableView<T> extends DefaultTableModel implements Editable
     }
     @Override
     public void addRow() {
-        T entity = ReflectUtil.newInstance(tClass);
         DataPivotTableRowView<T> dataPivotTableRowView = dataPivotTableRowViewSupplier.get();
-        if (dataPivotTableRowView.showAndGet()) {
-            //entity = dataPivotTableRowView.getValue();
-            entity = (T) dataPivotTableRowView.getValue();
+        if (!dataPivotTableRowView.showAndGet()) {
+            return;
         }
+        T entity = (T) dataPivotTableRowView.getValue();
         if (checkAddRow==null||(checkAddRow!=null&&checkAddRow.apply(dataList,entity))) {
             this.dataList.add(entity);
             addRowData(entity);
@@ -138,14 +136,6 @@ public class DataPivotTableView<T> extends DefaultTableModel implements Editable
 
     public void setTable(JBTable table) {
         this.table = table;
-    }
-
-    public Class<T> gettClass() {
-        return tClass;
-    }
-
-    public void settClass(Class<T> tClass) {
-        this.tClass = tClass;
     }
 
     public BiFunction<List<T>, T, Boolean> getCheckAddRow() {
