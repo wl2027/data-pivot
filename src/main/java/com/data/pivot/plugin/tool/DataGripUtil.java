@@ -80,9 +80,12 @@ public class DataGripUtil {
     }
 
     private static void collectNamingNames(TreePatternNode node, List<String> names) {
+        if (node == null) {
+            return;
+        }
         if (node.naming != null && node.naming.names != null) {
             for (ObjectName name : node.naming.names) {
-                if (name.name != null && !name.name.isBlank() && !names.contains(name.name)) {
+                if (name != null && name.name != null && !name.name.isBlank() && !names.contains(name.name)) {
                     names.add(name.name);
                 }
             }
@@ -91,11 +94,13 @@ public class DataGripUtil {
             return;
         }
         for (TreePatternNode.Group group : node.groups) {
-            if (group.children == null) {
+            if (group == null || group.children == null) {
                 continue;
             }
             for (TreePatternNode child : group.children) {
-                collectNamingNames(child, names);
+                if (child != null) {
+                    collectNamingNames(child, names);
+                }
             }
         }
     }

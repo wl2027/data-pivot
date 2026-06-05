@@ -2,7 +2,9 @@ package com.data.pivot.plugin.config;
 
 
 import com.data.pivot.plugin.entity.custom.DataPivotStrategyInfo;
+import com.data.pivot.plugin.tool.DataSourceDriverUtil;
 import com.data.pivot.plugin.tool.DatabaseUtil;
+import com.data.pivot.plugin.tool.QueryTool;
 import com.data.pivot.plugin.context.DataPivotApplication;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
@@ -16,6 +18,8 @@ public class DataPivotInitializer implements StartupActivity.DumbAware {
         initDataPivotDatabaseInfo(project);
         initDataPivotSettingInfo(project);
         Disposer.register(project, DatabaseUtil::closeConnections);
+        Disposer.register(project, QueryTool::closeAllConnections);
+        Disposer.register(project, DataSourceDriverUtil::deregisterAllDrivers);
     }
 
     static void initDefaultStrategy(DataPivotApplication application) {
