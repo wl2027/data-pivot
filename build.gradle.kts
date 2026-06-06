@@ -118,6 +118,9 @@ tasks {
     val defaultTest = named<Test>("test")
 
     withType<Test> {
+        // IntelliJ test setup resolves the platform and cleans per-task IDE directories in doFirst.
+        // Those actions capture Gradle project state and therefore cannot be serialized safely.
+        notCompatibleWithConfigurationCache("IntelliJ test setup uses runtime project state")
         useJUnit()
         jvmArgs(
             "--add-opens=java.base/java.lang=ALL-UNNAMED",
@@ -202,26 +205,5 @@ tasks {
 
     check {
         dependsOn("unitTest", "integrationTest", "ideaUiTest")
-    }
-}
-
-intellijPlatformTesting {
-    runIde {
-        register("runIdeForUiTests") {
-            task {
-                jvmArgumentProviders += CommandLineArgumentProvider {
-                    listOf(
-                        "-Drobot-server.port=8082",
-                        "-Dide.mac.message.dialogs.as.sheets=false",
-                        "-Djb.privacy.policy.text=<!--999.999-->",
-                        "-Djb.consents.confirmation.enabled=false",
-                    )
-                }
-            }
-
-            plugins {
-                robotServerPlugin()
-            }
-        }
     }
 }

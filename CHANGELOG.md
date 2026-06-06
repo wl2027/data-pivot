@@ -3,6 +3,18 @@
 # data-pivot-plugin Changelog
 
 ## [Unreleased]
+### Fixed
+- 修复同一版本已有 GitHub Release 草稿时后续提交无法刷新草稿、构建产物和目标提交的问题。
+
+## [2.2.0] - 2026-06-06
+### Added
+- 新增基于版本号的 GitHub Release 草稿流程，自动附加 `build/distributions` 中的插件 ZIP。
+- 新增 GitHub Release 正式发布后自动推送 JetBrains Marketplace 的独立工作流。
+- 恢复单元测试、集成测试和 UI 组件测试门禁，并提供手动跨平台 UI 组件测试。
+
+### Changed
+- 移除耗时且需要下载额外 IDE 的 Plugin Verifier 步骤。
+- 测试任务禁用不兼容的 Gradle Configuration Cache，避免测试通过后因缓存序列化失败。
 
 ## [2.1.0] - 2026-06-05
 ### Changed
@@ -69,7 +81,8 @@
 - Project initialization, covering data analysis, ORM & ROM navigation.
 - 项目初始化，包含数据分析、ORM&ROM导航。
 
-[Unreleased]: https://github.com/wl2027/runtime-pivot/compare/2.1.0...HEAD
+[Unreleased]: https://github.com/wl2027/data-pivot-plugin/compare/2.2.0...HEAD
+[2.2.0]: https://github.com/wl2027/data-pivot-plugin/compare/2.1.0...2.2.0
 [2.1.0]: https://github.com/wl2027/runtime-pivot/compare/2.0.0...2.1.0
 [2.0.0]: https://github.com/wl2027/runtime-pivot/compare/1.1.2...2.0.0
 [1.1.2]: https://github.com/wl2027/runtime-pivot/compare/1.1.1...1.1.2
