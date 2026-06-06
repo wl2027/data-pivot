@@ -42,10 +42,21 @@ jobs:
 
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-          if git rev-parse --verify --quiet "refs/tags/$version" >/dev/null || \
-             gh release view "$version" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "Version $version already has a tag or release; nothing to publish."
+          # A published git tag means the version is already released; never rebuild it.
+          if git rev-parse --verify --quiet "refs/tags/$version" >/dev/null; then
+            echo "Version $version already has a tag; nothing to publish."
             echo "is_new_version=false" >> "$GITHUB_OUTPUT"
+          elif is_draft=$(gh release view "$version" --repo "$GITHUB_REPOSITORY" --json isDraft --jq '.isDraft' 2>/dev/null); then
+            # A release with this version already exists. Only a published release is
+            # final: an existing draft must be rebuilt so its assets and target commit
+            # track the latest push instead of remaining stuck on the first run.
+            if [[ "$is_draft" == "true" ]]; then
+              echo "Version $version has an existing draft release; it will be rebuilt and refreshed."
+              echo "is_new_version=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "Version $version already has a published release; nothing to publish."
+              echo "is_new_version=false" >> "$GITHUB_OUTPUT"
+            fi
           else
             echo "Version $version is new and will be released."
             echo "is_new_version=true" >> "$GITHUB_OUTPUT"
@@ -153,6 +164,7 @@ jobs:
             gh release edit "$VERSION" \
               --repo "$GITHUB_REPOSITORY" \
               --draft \
+              --target "$GITHUB_SHA" \
               --title "$VERSION" \
               --notes-file build/tmp/release-note.md
             gh release upload "$VERSION" "${distributions[@]}" \
