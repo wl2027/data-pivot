@@ -8,7 +8,6 @@
 
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/com.github.wl2027.datapivotplugin.svg)](https://plugins.jetbrains.com/plugin/23828-data-pivot)
 ![Downloads](https://img.shields.io/github/release/wl2027/data-pivot.svg)
-
 ![MySQL](https://img.shields.io/badge/MySQL-支持-brightgreen.svg)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-支持-blue.svg)
 ![Oracle](https://img.shields.io/badge/Oracle-支持-red.svg)
