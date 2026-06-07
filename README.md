@@ -1,15 +1,10 @@
-```banner
-________      _____________________           __________._______   _______________________
-\______ \    /  _  \__    ___/  _  \          \______   \   \   \ /   /\_____  \__    ___/
- |    |  \  /  /_\  \|    | /  /_\  \   ______ |     ___/   |\   Y   /  /   |   \|    |   
- |    `   \/    |    \    |/    |    \ /_____/ |    |   |   | \     /  /    |    \    |   
-/_______  /\____|__  /____|\____|__  /         |____|   |___|  \___/   \_______  /____|   
-        \/         \/              \/                                          \/         
-```
+
 <div align="center">
 
-# data-pivot-plugin
+# Data-Pivot
 
+<img src="src/main/resources/META-INF/pluginIcon.svg" alt="data-pivot plugin logo" width="128" height="128" />
+</br>
 
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/com.github.wl2027.datapivotplugin.svg)](https://plugins.jetbrains.com/plugin/23828-data-pivot)
 ![Downloads](https://img.shields.io/github/release/wl2027/data-pivot.svg)
@@ -18,14 +13,17 @@ ________      _____________________           __________._______   _____________
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-支持-blue.svg)
 ![Oracle](https://img.shields.io/badge/Oracle-支持-red.svg)
 ![SQL Server](https://img.shields.io/badge/SQL%20Server-支持-lightgrey.svg)
-![Drivers](https://img.shields.io/badge/JDBC%20Drivers-IDEA%20Data%20Sources-blue.svg)
 
+![Drivers](https://img.shields.io/badge/JDBC%20Drivers-IDEA%20Data%20Sources-blue.svg)
 ![Downloads](https://img.shields.io/badge/license-GPLv3-blue.svg)
 ![Downloads](https://img.shields.io/badge/Java-21-brightgreen.svg?style=flat)
 ![Downloads](https://img.shields.io/github/stars/wl2027/data-pivot)
 [![GitHub](https://img.shields.io/static/v1?label=&message=GitHub&logo=github&color=black&labelColor=555)](https://github.com/wl2027/data-pivot) 
 [![Gitee](https://img.shields.io/static/v1?label=&message=Gitee&logo=gitee&color=orange&labelColor=555)](https://gitee.com/wl2027/data-pivot)
 [![Version](https://img.shields.io/jetbrains/plugin/v/com.github.wl2027.datapivotplugin.svg)](https://plugins.jetbrains.com/plugin/23828-data-pivot)
+
+
+
 
 
 </div>
